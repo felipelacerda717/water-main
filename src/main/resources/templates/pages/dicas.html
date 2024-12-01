@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMonitor - Dicas de Economia</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold">AquaMonitor</div>
+                <div class="flex items-center space-x-4">
+                    <span th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
+                            Sair
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6">Dicas de Economia de Água</h2>
+
+                <!-- Calculadora de Economia -->
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <h3 class="text-lg font-medium mb-4">Calculadora de Economia</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Tempo médio de banho (minutos)</label>
+                            <input type="number" id="tempoBanho" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Vazamentos (gotas por minuto)</label>
+                            <input type="number" id="vazamentos" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="calcularEconomia()" class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                                Calcular Economia
+                            </button>
+                        </div>
+                    </div>
+                    <div id="resultadoEconomia" class="mt-4 hidden">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-blue-700">Potencial de economia mensal: <span id="economiaTotal">0</span> litros</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dicas Personalizadas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div th:each="dica : ${dicas}" class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-5">
+                            <div class="flex justify-between items-start">
+                                <h4 class="text-lg font-medium text-gray-900" th:text="${dica.titulo}">Título da Dica</h4>
+                                <span th:class="${'px-2 py-1 text-xs rounded-full ' + 
+                                    (dica.nivelDificuldade == 'FACIL' ? 'bg-green-100 text-green-800' :
+                                     dica.nivelDificuldade == 'MEDIO' ? 'bg-yellow-100 text-yellow-800' :
+                                     'bg-red-100 text-red-800')}"
+                                    th:text="${dica.nivelDificuldade}">
+                                    Nível
+                                </span>
+                            </div>
+                            <p class="mt-2 text-gray-600" th:text="${dica.descricao}">Descrição da dica...</p>
+                            <div class="mt-4 flex items-center text-sm text-gray-500">
+                                <svg class="h-5 w-5 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <span>Economia estimada: </span>
+                                <span class="font-medium ml-1" th:text="${dica.economiaEstimada + 'L/mês'}">100L/mês</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function calcularEconomia() {
+            const tempoBanho = document.getElementById('tempoBanho').value;
+            const vazamentos = document.getElementById('vazamentos').value;
+            
+            // Cálculos estimados
+            const economiaBanho = (tempoBanho - 5) * 9 * 30; // 9L por minuto, 30 dias
+            const economiaVazamentos = vazamentos * 0.07 * 1440 * 30; // 0.07L por gota, 1440 minutos por dia, 30 dias
+            
+            const economiaTotal = Math.max(0, economiaBanho) + Math.max(0, economiaVazamentos);
+            
+            document.getElementById('economiaTotal').textContent = Math.round(economiaTotal);
+            document.getElementById('resultadoEconomia').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMonitor - Conquistas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold">AquaMonitor</div>
+                <div class="flex items-center space-x-4">
+                    <span th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
+                            Sair
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div class="max-w-6xl mx-auto">
+                <!-- Resumo de Pontos -->
+                <div class="bg-white rounded-lg shadow p-6 mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Suas Conquistas</h2>
+                            <p class="mt-1 text-sm text-gray-500">Continue economizando água para desbloquear mais conquistas!</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-3xl font-bold text-blue-600">850</p>
+                            <p class="text-sm text-gray-500">Pontos Totais</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid de Conquistas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div th:each="conquista : ${conquistas}" 
+                         class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                        <div class="p-6">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-900" th:text="${conquista.conquista.nome}">
+                                        Nome da Conquista
+                                    </h3>
+                                    <p class="mt-1 text-sm text-gray-500" th:text="${conquista.conquista.descricao}">
+                                        Descrição da conquista
+                                    </p>
+                                </div>
+                                <div class="ml-4">
+                                    <span th:if="${conquista.dataConquista != null}"
+                                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Conquistado
+                                    </span>
+                                    <span th:unless="${conquista.dataConquista != null}"
+                                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Em Progresso
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Barra de Progresso -->
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                    <span th:text="${conquista.pontosAtuais + ' pontos'}">0 pontos</span>
+                                    <span th:text="${conquista.conquista.pontosRequeridos + ' necessários'}">100 necessários</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 rounded-full h-2" 
+                                         th:style="'width: ' + ${(conquista.pontosAtuais * 100) / conquista.conquista.pontosRequeridos + '%'}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conquistas Bloqueadas -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Próximas Conquistas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="border rounded-lg p-4 bg-gray-50">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="text-sm font-medium text-gray-900">Super Economizador</h4>
+                                    <p class="text-xs text-gray-500">Economize 1000L em um mês</p>
+                                </div>
+                                <div class="ml-4">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        //adicionar animações e interações aqui
+    </script>
+</body>
+</html>

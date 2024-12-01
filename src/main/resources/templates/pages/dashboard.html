@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMonitor - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold">AquaMonitor</div>
+                <div class="flex items-center space-x-4">
+                    <span th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
+                            Sair
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <div th:replace="fragments/sidebar :: sidebar"></div>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <!-- Alertas -->
+            <div th:if="${!alertas.empty}" class="mb-6">
+                <div th:each="alerta : ${alertas}" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-2">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700" th:text="${alerta}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards de Resumo -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- Consumo Hoje -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Consumo Hoje</h3>
+                    <div class="mt-2 flex items-baseline">
+                        <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(consumoHoje, 1, 0)}">0</p>
+                        <p class="ml-1 text-sm font-medium text-gray-500">L</p>
+                    </div>
+                </div>
+
+                <!-- Consumo Mensal -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Consumo Mensal</h3>
+                    <div class="mt-2 flex items-baseline">
+                        <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(consumoMesAtual, 1, 0)}">0</p>
+                        <p class="ml-1 text-sm font-medium text-gray-500">L</p>
+                        <p class="ml-2 text-sm font-medium" th:class="${variacaoMensal >= 0 ? 'text-red-500' : 'text-green-500'}"
+                           th:text="${(variacaoMensal >= 0 ? '+' : '') + #numbers.formatDecimal(variacaoMensal, 1, 1) + '%'}">
+                           0%
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Previsão Mensal -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Previsão Mensal</h3>
+                    <div class="mt-2 flex items-baseline">
+                        <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(previsaoMensal, 1, 0)}">0</p>
+                        <p class="ml-1 text-sm font-medium text-gray-500">L</p>
+                    </div>
+                </div>
+
+                <!-- Meta Atual -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-sm font-medium text-gray-500">Progresso da Meta</h3>
+                    <div th:if="${metaAtual != null}" class="mt-2">
+                        <div class="flex justify-between mb-1">
+                            <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(metaAtual.progresso, 1, 1) + '%'}">0%</p>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 rounded-full h-2.5" th:style="'width: ' + ${metaAtual.progresso + '%'}"></div>
+                        </div>
+                    </div>
+                    <div th:unless="${metaAtual != null}" class="mt-2">
+                        <p class="text-sm text-gray-500">Nenhuma meta ativa</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                <!-- Consumo Semanal -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-medium mb-4">Consumo Semanal</h3>
+                    <canvas id="consumoSemanalChart" height="200"></canvas>
+                </div>
+
+                <!-- Comparativo Mensal -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-medium mb-4">Comparativo Mensal</h3>
+                    <canvas id="comparativoMensalChart" height="200"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        // Dados do consumo semanal
+        const consumoSemanal = /*[[${consumoSemanal}]]*/ {};
+        const ctx1 = document.getElementById('consumoSemanalChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: Object.keys(consumoSemanal),
+                datasets: [{
+                    label: 'Consumo (L)',
+                    data: Object.values(consumoSemanal),
+                    borderColor: 'rgb(59, 130, 246)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Dados do comparativo mensal
+        const ctx2 = document.getElementById('comparativoMensalChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Mês Anterior', 'Mês Atual', 'Previsão'],
+                datasets: [{
+                    label: 'Consumo (L)',
+                    data: [
+                        /*[[${consumoMesAnterior}]]*/ 0,
+                        /*[[${consumoMesAtual}]]*/ 0,
+                        /*[[${previsaoMensal}]]*/ 0
+                    ],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.5)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(59, 130, 246, 0.9)'
+                    ],
+                    borderColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(59, 130, 246)',
+                        'rgb(59, 130, 246)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

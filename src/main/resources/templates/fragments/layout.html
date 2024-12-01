@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaMonitor - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Chart.js para os gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div th:fragment="header">
+        <header class="bg-blue-600 text-white">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="text-2xl font-bold">AquaMonitor</div>
+                    <div class="flex items-center space-x-4">
+                        <span>Olá, Usuário</span>
+                        <button class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
+                            Perfil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <div th:fragment="sidebar">
+        <aside class="w-64 min-h-screen bg-white shadow-md">
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="/dashboard" class="flex items-center space-x-2 w-full p-2 rounded-lg bg-blue-50 text-blue-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <!-- Outros itens do menu -->
+                </ul>
+            </nav>
+        </aside>
+    </div>
+
+    <div th:fragment="footer">
+        <footer class="bg-white border-t mt-8">
+            <div class="container mx-auto px-4 py-4 text-center text-gray-600">
+                AquaMonitor © 2024
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

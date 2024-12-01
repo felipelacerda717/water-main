@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <aside th:fragment="sidebar" class="w-64 min-h-screen bg-white shadow-md">
+        <nav class="p-4">
+            <ul class="space-y-2">
+                <li>
+                    <a href="/dashboard" 
+                       class="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-gray-50"
+                       th:classappend="${#strings.equals(active, 'dashboard')} ? 'bg-blue-50 text-blue-600' : ''">
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/consumo" 
+                       class="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-gray-50"
+                       th:classappend="${#strings.equals(active, 'consumo')} ? 'bg-blue-50 text-blue-600' : ''">
+                        <span>Registrar Consumo</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/metas" 
+                       class="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-gray-50"
+                       th:classappend="${#strings.equals(active, 'metas')} ? 'bg-blue-50 text-blue-600' : ''">
+                        <span>Minhas Metas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/dicas" 
+                       class="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-gray-50"
+                       th:classappend="${#strings.equals(active, 'dicas')} ? 'bg-blue-50 text-blue-600' : ''">
+                        <span>Dicas de Economia</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/conquistas" 
+                       class="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-gray-50"
+                       th:classappend="${#strings.equals(active, 'conquistas')} ? 'bg-blue-50 text-blue-600' : ''">
+                        <span>Conquistas</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/ranking" 
+                    class="flex items-center space-x-2 w-full p-2 rounded-lg hover:bg-gray-50"
+                    th:classappend="${#strings.equals(active, 'ranking')} ? 'bg-blue-50 text-blue-600' : ''">
+                        <span>Ranking</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+</body>
+</html>

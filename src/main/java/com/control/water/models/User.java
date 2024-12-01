@@ -12,7 +12,10 @@ public class User {
     private Long id;
     
     private String name;
+
+    @Column(unique = true)
     private String email;
+    
     private String password;
     private String residenceType; // CASA, APARTAMENTO, COMERCIAL
     private Integer residents;    // Número de residentes

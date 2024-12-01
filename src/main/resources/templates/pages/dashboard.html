@@ -47,52 +47,75 @@
                 </div>
             </div>
 
-            <!-- Cards de Resumo -->
+            <!-- Status Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <!-- Consumo Hoje -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-sm font-medium text-gray-500">Consumo Hoje</h3>
-                    <div class="mt-2 flex items-baseline">
-                        <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(consumoHoje, 1, 0)}">0</p>
-                        <p class="ml-1 text-sm font-medium text-gray-500">L</p>
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-blue-100 bg-opacity-75">
+                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-sm font-medium text-gray-500">Consumo Hoje</h2>
+                            <p class="text-2xl font-semibold text-gray-900">
+                                <span th:text="${#numbers.formatDecimal(consumoHoje, 1, 1)}">0</span>L
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Consumo Mensal -->
+                <!-- Ranking -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-sm font-medium text-gray-500">Consumo Mensal</h3>
-                    <div class="mt-2 flex items-baseline">
-                        <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(consumoMesAtual, 1, 0)}">0</p>
-                        <p class="ml-1 text-sm font-medium text-gray-500">L</p>
-                        <p class="ml-2 text-sm font-medium" th:class="${variacaoMensal >= 0 ? 'text-red-500' : 'text-green-500'}"
-                           th:text="${(variacaoMensal >= 0 ? '+' : '') + #numbers.formatDecimal(variacaoMensal, 1, 1) + '%'}">
-                           0%
-                        </p>
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-green-100 bg-opacity-75">
+                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-sm font-medium text-gray-500">Ranking</h2>
+                            <p class="text-2xl font-semibold text-gray-900">
+                                <span th:text="${posicaoRanking}">0</span>º
+                                <span class="text-sm text-gray-500">de</span>
+                                <span th:text="${totalUsuarios}">0</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Economia Total -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 bg-opacity-75">
+                            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <h2 class="text-sm font-medium text-gray-500">Economia Total</h2>
+                            <p class="text-2xl font-semibold text-gray-900">
+                                <span th:text="${#numbers.formatDecimal(economiaTotal, 1, 1)}">0</span>L
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Previsão Mensal -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-sm font-medium text-gray-500">Previsão Mensal</h3>
-                    <div class="mt-2 flex items-baseline">
-                        <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(previsaoMensal, 1, 0)}">0</p>
-                        <p class="ml-1 text-sm font-medium text-gray-500">L</p>
-                    </div>
-                </div>
-
-                <!-- Meta Atual -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-sm font-medium text-gray-500">Progresso da Meta</h3>
-                    <div th:if="${metaAtual != null}" class="mt-2">
-                        <div class="flex justify-between mb-1">
-                            <p class="text-2xl font-semibold text-gray-900" th:text="${#numbers.formatDecimal(metaAtual.progresso, 1, 1) + '%'}">0%</p>
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-yellow-100 bg-opacity-75">
+                            <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 rounded-full h-2.5" th:style="'width: ' + ${metaAtual.progresso + '%'}"></div>
+                        <div class="ml-4">
+                            <h2 class="text-sm font-medium text-gray-500">Previsão Mensal</h2>
+                            <p class="text-2xl font-semibold text-gray-900">
+                                <span th:text="${#numbers.formatDecimal(previsaoConsumo, 1, 1)}">0</span>L
+                            </p>
                         </div>
-                    </div>
-                    <div th:unless="${metaAtual != null}" class="mt-2">
-                        <p class="text-sm text-gray-500">Nenhuma meta ativa</p>
                     </div>
                 </div>
             </div>
@@ -102,23 +125,48 @@
                 <!-- Consumo Semanal -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-medium mb-4">Consumo Semanal</h3>
-                    <canvas id="consumoSemanalChart" height="200"></canvas>
+                    <canvas id="consumoSemanalChart"></canvas>
                 </div>
 
                 <!-- Comparativo Mensal -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-medium mb-4">Comparativo Mensal</h3>
-                    <canvas id="comparativoMensalChart" height="200"></canvas>
+                    <canvas id="comparativoMensalChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Meta Atual -->
+            <div th:if="${metaAtual != null}" class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-medium mb-4">Meta Atual</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-lg font-medium" th:text="${metaAtual.descricao}">Meta Mensal</p>
+                            <p class="text-sm text-gray-500">
+                                <span th:text="${#temporals.format(metaAtual.dataInicio, 'dd/MM')}"></span> - 
+                                <span th:text="${#temporals.format(metaAtual.dataFim, 'dd/MM')}"></span>
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xl font-semibold text-blue-600" th:text="${#numbers.formatDecimal(metaAtual.progresso, 1, 1) + '%'}">0%</p>
+                            <p class="text-sm text-gray-500">do objetivo</p>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-blue-600 rounded-full h-2.5 transition-all duration-500"
+                             th:style="'width: ' + ${metaAtual.progresso + '%'}"></div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script th:inline="javascript">
-        // Dados do consumo semanal
+        // Dados para os gráficos
         const consumoSemanal = /*[[${consumoSemanal}]]*/ {};
-        const ctx1 = document.getElementById('consumoSemanalChart').getContext('2d');
-        new Chart(ctx1, {
+        
+        // Gráfico de Consumo Semanal
+        new Chart(document.getElementById('consumoSemanalChart'), {
             type: 'line',
             data: {
                 labels: Object.keys(consumoSemanal),
@@ -144,9 +192,8 @@
             }
         });
 
-        // Dados do comparativo mensal
-        const ctx2 = document.getElementById('comparativoMensalChart').getContext('2d');
-        new Chart(ctx2, {
+        // Gráfico Comparativo Mensal
+        new Chart(document.getElementById('comparativoMensalChart'), {
             type: 'bar',
             data: {
                 labels: ['Mês Anterior', 'Mês Atual', 'Previsão'],
@@ -155,18 +202,14 @@
                     data: [
                         /*[[${consumoMesAnterior}]]*/ 0,
                         /*[[${consumoMesAtual}]]*/ 0,
-                        /*[[${previsaoMensal}]]*/ 0
+                        /*[[${previsaoConsumo}]]*/ 0
                     ],
                     backgroundColor: [
                         'rgba(59, 130, 246, 0.5)',
                         'rgba(59, 130, 246, 0.7)',
                         'rgba(59, 130, 246, 0.9)'
                     ],
-                    borderColor: [
-                        'rgb(59, 130, 246)',
-                        'rgb(59, 130, 246)',
-                        'rgb(59, 130, 246)'
-                    ],
+                    borderColor: 'rgb(59, 130, 246)',
                     borderWidth: 1
                 }]
             },

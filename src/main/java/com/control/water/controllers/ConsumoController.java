@@ -42,7 +42,6 @@ public class ConsumoController {
         
         return "pages/consumo";
     }
-
     @PostMapping("/registrar")
     public String registrarConsumo(
             @RequestParam LocalDate data,
@@ -53,35 +52,47 @@ public class ConsumoController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            // Busca o usuário logado
-            User user = userRepository.findByEmail(authentication.getName());
-
-            // Cria novo registro de consumo
+            // Verificar autenticação
+            if (authentication == null) {
+                redirectAttributes.addFlashAttribute("erroMsg", "Usuário não autenticado");
+                return "redirect:/consumo";
+            }
+    
+            // Log do email do usuário
+            String userEmail = authentication.getName();
+            System.out.println("Email do usuário: " + userEmail);
+    
+            // Buscar usuário
+            User user = userRepository.findByEmail(userEmail);
+            if (user == null) {
+                redirectAttributes.addFlashAttribute("erroMsg", "Usuário não encontrado para o email: " + userEmail);
+                return "redirect:/consumo";
+            }
+    
+            // Criar consumo
             Consumo consumo = new Consumo();
             consumo.setUser(user);
             consumo.setData(data);
             consumo.setLeitura(leitura);
             consumo.setTipo(tipo);
             consumo.setObservacoes(observacoes);
-
-            // Calcula o consumo em litros (multiplicar por 1000 para converter m³ para litros)
+    
+            // Calcular consumo em litros
             consumoRepository.findLastConsumoByUser(user).ifPresentOrElse(
                 ultimoConsumo -> {
                     double consumoLitros = (leitura - ultimoConsumo.getLeitura()) * 1000;
                     consumo.setConsumoLitros(consumoLitros);
                 },
-                () -> consumo.setConsumoLitros(leitura * 1000) // Primeiro registro
+                () -> consumo.setConsumoLitros(leitura * 1000)
             );
-
-            // Salva o consumo
+    
             consumoRepository.save(consumo);
-            gamificacaoService.verificarConquistasConsumo(consumo);
-
             redirectAttributes.addFlashAttribute("sucessoMsg", "Consumo registrado com sucesso!");
+    
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erroMsg", "Erro ao registrar consumo: " + e.getMessage());
         }
-
+    
         return "redirect:/consumo";
     }
 

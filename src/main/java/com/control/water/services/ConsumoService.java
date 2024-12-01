@@ -5,6 +5,9 @@ import com.control.water.models.Consumo;
 import com.control.water.repositories.ConsumoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.control.water.repositories.UserRepository;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -18,6 +21,10 @@ public class ConsumoService {
 
     @Autowired
     private ConsumoRepository consumoRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
 
     public Double getConsumoHoje(User user) {
         LocalDate hoje = LocalDate.now();
@@ -84,6 +91,36 @@ public class ConsumoService {
         }
         
         return alertas;
+    }
+
+    public Double getEconomiaTotal(User user) {
+        // Calcula a economia comparando com a média de consumo do sistema
+        LocalDate inicio = LocalDate.now().minusMonths(1);
+        LocalDate fim = LocalDate.now();
+        
+        Double consumoUsuario = consumoRepository.findTotalConsumoByUserAndPeriod(user, inicio, fim);
+        if (consumoUsuario == null) consumoUsuario = 0.0;
+
+        // Pega a média de consumo de todos os usuários
+        List<User> usuarios = userRepository.findAll();
+        double consumoTotal = 0.0;
+        int count = 0;
+        
+        for (User u : usuarios) {
+            Double consumo = consumoRepository.findTotalConsumoByUserAndPeriod(u, inicio, fim);
+            if (consumo != null && consumo > 0) {
+                consumoTotal += consumo;
+                count++;
+            }
+        }
+        
+        if (count == 0) return 0.0;
+        
+        double mediaConsumo = consumoTotal / count;
+        
+        // A economia é a diferença entre a média e o consumo do usuário
+        // Se negativo, significa que economizou
+        return Math.max(0.0, mediaConsumo - consumoUsuario);
     }
 
     private Double getMediaDiariaUltimos30Dias(User user) {

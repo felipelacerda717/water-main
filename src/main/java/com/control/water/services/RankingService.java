@@ -23,6 +23,22 @@ public class RankingService {
     @Autowired
     private GamificacaoService gamificacaoService;
 
+    // Método novo para pegar a posição do usuário no ranking
+    public Integer getPosicaoUsuario(User user) {
+        List<Map<String, Object>> ranking = getRankingGeral();
+        for (int i = 0; i < ranking.size(); i++) {
+            if (ranking.get(i).get("user").equals(user)) {
+                return i + 1;
+            }
+        }
+        return 0;
+    }
+
+    // Método novo para contar total de usuários
+    public Integer getTotalUsuarios() {
+        return (int) userRepository.count();
+    }
+
     public List<Map<String, Object>> getRankingGeral() {
         return userRepository.findAll().stream()
             .map(user -> Map.of(

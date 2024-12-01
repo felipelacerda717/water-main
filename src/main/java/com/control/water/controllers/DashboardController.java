@@ -12,7 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
+import com.control.water.services.RankingService;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.List;
@@ -28,41 +28,45 @@ public class DashboardController {
     private MetaService metaService;
 
     @Autowired
+    private RankingService rankingService; // Novo
+
+    @Autowired
     private UserRepository userRepository;
 
     @GetMapping
     public String dashboard(Model model, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName());
         
-        // Dados de consumo
+        // Dados existentes
         Double consumoHoje = consumoService.getConsumoHoje(user);
         Double consumoMesAtual = consumoService.getConsumoMesAtual(user);
         Double consumoMesAnterior = consumoService.getConsumoMesAnterior(user);
         Map<String, Double> consumoSemanal = consumoService.getConsumoUltimaSemana(user);
         
-        // Cálculo de variação
-        double variacaoMensal = 0.0;
-        if (consumoMesAnterior != null && consumoMesAnterior > 0) {
-            variacaoMensal = ((consumoMesAtual - consumoMesAnterior) / consumoMesAnterior) * 100;
-        }
-
-        // Previsão e alertas
-        Double previsaoMensal = consumoService.getPrevisaoConsumoMensal(user);
-        List<String> alertas = consumoService.getAlertasConsumo(user);
+        // Novos dados
+        Integer posicaoRanking = rankingService.getPosicaoUsuario(user);
+        Integer totalUsuarios = rankingService.getTotalUsuarios();
+        Double previsaoConsumo = consumoService.getPrevisaoConsumoMensal(user);
+        Double economiaTotal = consumoService.getEconomiaTotal(user);
         
-        // Meta atual
+        // Meta e alertas
         Meta metaAtual = metaService.getMetaAtiva(user);
+        List<String> alertas = consumoService.getAlertasConsumo(user);
 
         // Adiciona ao modelo
+        model.addAttribute("active", "dashboard");
         model.addAttribute("consumoHoje", consumoHoje != null ? consumoHoje : 0.0);
         model.addAttribute("consumoMesAtual", consumoMesAtual != null ? consumoMesAtual : 0.0);
         model.addAttribute("consumoMesAnterior", consumoMesAnterior != null ? consumoMesAnterior : 0.0);
-        model.addAttribute("variacaoMensal", variacaoMensal);
         model.addAttribute("consumoSemanal", consumoSemanal);
-        model.addAttribute("previsaoMensal", previsaoMensal != null ? previsaoMensal : 0.0);
         model.addAttribute("metaAtual", metaAtual);
         model.addAttribute("alertas", alertas);
-        model.addAttribute("active", "dashboard");
+        
+        // Novos atributos
+        model.addAttribute("posicaoRanking", posicaoRanking);
+        model.addAttribute("totalUsuarios", totalUsuarios);
+        model.addAttribute("previsaoConsumo", previsaoConsumo);
+        model.addAttribute("economiaTotal", economiaTotal);
 
         return "pages/dashboard";
     }

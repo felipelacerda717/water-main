@@ -2,8 +2,8 @@ package com.control.water.controllers;
 
 import com.control.water.models.Consumo;
 import com.control.water.models.User;
-import com.control.water.repositories.ConsumoRepository;
-import com.control.water.services.GamificacaoService;
+import com.control.water.services.ConsumoService;
+import com.control.water.services.MetaService;
 import com.control.water.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,28 +19,26 @@ import java.util.List;
 public class ConsumoController {
 
     @Autowired
-    private ConsumoRepository consumoRepository;
+    private ConsumoService consumoService;
 
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired 
-    private GamificacaoService gamificacaoService;
+    @Autowired
+    private MetaService metaService;
 
     @GetMapping
-    public String registroConsumo(Model model, Authentication authentication) {
-        // Busca o usuário logado
+    public String mostrarPaginaConsumo(Model model, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName());
         
-        // Busca os últimos registros de consumo do usuário
-        List<Consumo> ultimosRegistros = consumoRepository.findByUserOrderByDataDesc(user);
-        
-        // Adiciona os dados ao modelo
-        model.addAttribute("consumos", ultimosRegistros);
+        List<Consumo> ultimosRegistros = consumoService.getHistoricoConsumo(user);
+        model.addAttribute("consumos", ultimosRegistros); // Nome corrigido para "consumos"
         model.addAttribute("hoje", LocalDate.now());
+        model.addAttribute("metaAtual", metaService.getMetaAtiva(user));
         
         return "pages/consumo";
     }
+
     @PostMapping("/registrar")
     public String registrarConsumo(
             @RequestParam LocalDate data,
@@ -52,63 +49,42 @@ public class ConsumoController {
             RedirectAttributes redirectAttributes) {
         
         try {
-            // Verificar autenticação
-            if (authentication == null) {
-                redirectAttributes.addFlashAttribute("erroMsg", "Usuário não autenticado");
-                return "redirect:/consumo";
-            }
-    
-            // Log do email do usuário
-            String userEmail = authentication.getName();
-            System.out.println("Email do usuário: " + userEmail);
-    
-            // Buscar usuário
-            User user = userRepository.findByEmail(userEmail);
-            if (user == null) {
-                redirectAttributes.addFlashAttribute("erroMsg", "Usuário não encontrado para o email: " + userEmail);
-                return "redirect:/consumo";
-            }
-    
-            // Criar consumo
-            Consumo consumo = new Consumo();
-            consumo.setUser(user);
-            consumo.setData(data);
-            consumo.setLeitura(leitura);
-            consumo.setTipo(tipo);
-            consumo.setObservacoes(observacoes);
-    
-            // Calcular consumo em litros
-            consumoRepository.findLastConsumoByUser(user).ifPresentOrElse(
-                ultimoConsumo -> {
-                    double consumoLitros = (leitura - ultimoConsumo.getLeitura()) * 1000;
-                    consumo.setConsumoLitros(consumoLitros);
-                },
-                () -> consumo.setConsumoLitros(leitura * 1000)
-            );
-    
-            consumoRepository.save(consumo);
+            User user = userRepository.findByEmail(authentication.getName());
+            
+            // Criar novo consumo
+            Consumo novoConsumo = new Consumo();
+            novoConsumo.setUser(user);
+            novoConsumo.setData(data);
+            novoConsumo.setLeitura(leitura);
+            novoConsumo.setTipo(tipo);
+            novoConsumo.setObservacoes(observacoes);
+
+            // Salva o consumo e atualiza dados relacionados
+            Consumo consumoSalvo = consumoService.registrarConsumoCompleto(novoConsumo);
+            
+            // Atualiza meta após novo consumo
+            metaService.atualizarProgressoAposConsumo(consumoSalvo);
+            
             redirectAttributes.addFlashAttribute("sucessoMsg", "Consumo registrado com sucesso!");
-    
+            
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erroMsg", "Erro ao registrar consumo: " + e.getMessage());
         }
-    
+        
         return "redirect:/consumo";
     }
-
+    
     @GetMapping("/historico")
     @ResponseBody
     public List<Consumo> historico(Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName());
-        return consumoRepository.findByUserOrderByDataDesc(user);
+        return consumoService.getHistoricoConsumo(user);
     }
 
     @GetMapping("/consumo-mensal")
     @ResponseBody
     public Double consumoMensal(Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName());
-        LocalDate inicio = LocalDate.now().withDayOfMonth(1);
-        LocalDate fim = LocalDate.now();
-        return consumoRepository.findTotalConsumoByUserAndPeriod(user, inicio, fim);
+        return consumoService.getConsumoMesAtual(user);
     }
 }

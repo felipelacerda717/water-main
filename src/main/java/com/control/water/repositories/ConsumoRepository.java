@@ -4,6 +4,7 @@ import com.control.water.models.Consumo;
 import com.control.water.models.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -62,4 +63,11 @@ public interface ConsumoRepository extends JpaRepository<Consumo, Long> {
         @Param("userId") Long userId, 
         @Param("date") LocalDate date
     );
-}
+
+    @Modifying
+    @Query("DELETE FROM Consumo c WHERE c.user = :user")
+    void deleteByUser(@Param("user") User user);
+};
+
+
+    

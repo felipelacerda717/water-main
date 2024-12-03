@@ -94,10 +94,21 @@
                     </form>
                 </div>
 
+                
+
                 <!-- Últimos Registros -->
                 <div class="mt-8 bg-white rounded-lg shadow">
                     <div class="p-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Últimos Registros</h3>
+                        <div class="mb-4 flex justify-end">
+                            <form th:action="@{/consumo/excluir-todos}" method="POST" 
+                                  onsubmit="return confirm('Tem certeza que deseja excluir TODOS os registros de consumo?');">
+                                <button type="submit" 
+                                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                    Excluir Todos os Registros
+                                </button>
+                            </form>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
@@ -114,6 +125,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Consumo
                                         </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -130,6 +142,15 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
                                             th:text="${#numbers.formatDecimal(consumo.consumoLitros, 1, 0) + ' L'}">
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <form th:action="@{/consumo/excluir/{id}(id=${consumo.id})}" method="POST" 
+                                                  onsubmit="return confirm('Tem certeza que deseja excluir este registro?');">
+                                                <button type="submit" 
+                                                        class="text-red-600 hover:text-red-900 px-3 py-1 rounded-md text-sm font-medium
+                                                               hover:bg-red-100 transition duration-150 ease-in-out">
+                                                    Excluir
+                                                </button>
+                                            </form>
                                     </tr>
                                 </tbody>
                             </table>

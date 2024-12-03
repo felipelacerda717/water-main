@@ -8,13 +8,15 @@ import com.control.water.repositories.ConsumoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class MetaService {
+
+    
 
     @Autowired
     private MetaRepository metaRepository;
@@ -109,5 +111,10 @@ public class MetaService {
         if (meta.getProgresso() >= 90.0) return "PROXIMA";
         
         return "EM_ANDAMENTO";
+    }
+
+    @Transactional
+    public void excluirTodasMetas(User user) {
+        metaRepository.deleteByUser(user);
     }
 }

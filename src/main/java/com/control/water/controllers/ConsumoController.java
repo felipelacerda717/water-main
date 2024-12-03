@@ -87,4 +87,27 @@ public class ConsumoController {
         User user = userRepository.findByEmail(authentication.getName());
         return consumoService.getConsumoMesAtual(user);
     }
+
+    @PostMapping("/excluir/{id}")
+    public String excluirConsumo(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            consumoService.excluirConsumo(id);
+            redirectAttributes.addFlashAttribute("sucessoMsg", "Registro excluído com sucesso!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erroMsg", "Erro ao excluir registro: " + e.getMessage());
+        }
+        return "redirect:/consumo";
+    }
+
+    @PostMapping("/excluir-todos")
+    public String excluirTodosConsumos(Authentication authentication, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userRepository.findByEmail(authentication.getName());
+            consumoService.excluirTodosConsumos(user);
+            redirectAttributes.addFlashAttribute("sucessoMsg", "Todos os registros de consumo foram excluídos!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erroMsg", "Erro ao excluir registros: " + e.getMessage());
+        }
+        return "redirect:/consumo";
+    }
 }

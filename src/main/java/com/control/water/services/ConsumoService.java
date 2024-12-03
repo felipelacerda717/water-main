@@ -223,4 +223,23 @@ public class ConsumoService {
             return 0.0;
         }
     }
+
+    @Transactional
+    public void excluirConsumo(Long id) {
+        Consumo consumo = consumoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Registro não encontrado"));
+            
+        consumoRepository.delete(consumo);
+        
+        // Após excluir, atualiza a meta do usuário
+        Meta metaAtiva = metaService.getMetaAtiva(consumo.getUser());
+        if (metaAtiva != null) {
+            atualizarProgressoMeta(metaAtiva, consumo.getUser());
+        }
+    }
+
+    @Transactional
+    public void excluirTodosConsumos(User user) {
+        consumoRepository.deleteByUser(user);
+    }
 }

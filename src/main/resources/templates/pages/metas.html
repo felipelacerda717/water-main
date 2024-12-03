@@ -89,6 +89,8 @@
                     </div>
                 </div>
 
+                
+
                 <!-- Criar Nova Meta -->
                 <div class="bg-white rounded-lg shadow p-6 mb-6">
                     <h3 class="text-lg font-medium mb-4">Criar Nova Meta</h3>
@@ -126,10 +128,21 @@
                     </form>
                 </div>
 
+               
+
                 <!-- Histórico de Metas -->
                 <div class="bg-white rounded-lg shadow">
                     <div class="p-6">
                         <h3 class="text-lg font-medium mb-4">Histórico de Metas</h3>
+                        <div class="mb-4 flex justify-end">
+                            <form th:action="@{/metas/excluir-todas}" method="POST" 
+                                  onsubmit="return confirm('Tem certeza que deseja excluir TODAS as metas?');">
+                                <button type="submit" 
+                                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                    Excluir Todas as Metas
+                                </button>
+                            </form>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">

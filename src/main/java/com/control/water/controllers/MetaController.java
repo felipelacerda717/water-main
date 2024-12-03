@@ -4,6 +4,8 @@ import com.control.water.models.Meta;
 import com.control.water.models.User;
 import com.control.water.repositories.MetaRepository;
 import com.control.water.repositories.UserRepository;
+import com.control.water.services.MetaService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -17,6 +19,9 @@ import java.util.List;
 @Controller
 @RequestMapping("/metas")
 public class MetaController {
+
+     @Autowired
+    private MetaService metaService;
 
     @Autowired
     private MetaRepository metaRepository;
@@ -95,6 +100,18 @@ public class MetaController {
                                 redirectAttributes.addFlashAttribute("erroMsg", "Erro ao desativar meta: " + e.getMessage());
                             }
                             
+                            return "redirect:/metas";
+                        }
+
+                        @PostMapping("/excluir-todas")
+                        public String excluirTodasMetas(Authentication authentication, RedirectAttributes redirectAttributes) {
+                            try {
+                                User user = userRepository.findByEmail(authentication.getName());
+                                metaService.excluirTodasMetas(user);
+                                redirectAttributes.addFlashAttribute("sucessoMsg", "Todas as metas foram excluídas!");
+                            } catch (Exception e) {
+                                redirectAttributes.addFlashAttribute("erroMsg", "Erro ao excluir metas: " + e.getMessage());
+                            }
                             return "redirect:/metas";
                         }
                     }

@@ -13,7 +13,6 @@ public class UserService {
     private UserRepository userRepository;
     
     public User registrar(User user) {
-        // Verifica se já existe usuário com este email
         if (userRepository.findByEmail(user.getEmail()) != null) {
             throw new RuntimeException("Email já cadastrado");
         }
@@ -22,5 +21,10 @@ public class UserService {
     
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+    
+    // Novo método - assumindo que email é usado como username
+    public User findByUsername(String username) {
+        return userRepository.findByEmail(username);
     }
 }

@@ -1,20 +1,16 @@
 package com.control.water.services;
 
-import com.control.water.models.User;
-import com.control.water.models.Consumo;
-import com.control.water.models.Meta;
-import com.control.water.repositories.ConsumoRepository;
-import com.control.water.repositories.MetaRepository;
+import com.control.water.models.*;
+import com.control.water.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ConsumoService {
@@ -25,13 +21,61 @@ public class ConsumoService {
     private ConsumoRepository consumoRepository;
 
     @Autowired
+    private ConsumoMensalRepository consumoMensalRepository;
+
+    @Autowired
     private MetaRepository metaRepository;
 
     @Autowired
     private MetaService metaService;
 
+    @Autowired
+    private UserService userService;
+
     public List<Consumo> getHistoricoConsumo(User user) {
         return consumoRepository.findByUserOrderByDataDesc(user);
+    }
+
+    public User getUserLogado(Authentication authentication) {
+        return userService.findByUsername(authentication.getName());
+    }
+
+    public Set<YearMonth> getMesesDisponiveis(User user) {
+        List<Integer> yearMonths = consumoRepository.findDistinctYearMonthsByUser(user);
+        Set<YearMonth> meses = new TreeSet<>();
+        
+        for (Integer yearMonth : yearMonths) {
+            int year = yearMonth / 100;
+            int month = yearMonth % 100;
+            meses.add(YearMonth.of(year, month));
+        }
+        
+        return meses;
+    }
+
+    public List<Consumo> getConsumosDiarios(User user, YearMonth mes) {
+        if (mes == null) {
+            mes = YearMonth.now();
+        }
+        LocalDate inicio = mes.atDay(1);
+        LocalDate fim = mes.atEndOfMonth();
+        return consumoRepository.findConsumosByUserAndPeriod(user, inicio, fim);
+    }
+
+    public List<ConsumoMensal> getConsumosMensais(User user) {
+        return consumoMensalRepository.findByUserOrderByMesReferenciaDesc(user);
+    }
+
+    @Transactional
+    public Consumo registrarConsumoDiario(User user, LocalDate data, Double leitura, String tipo, String observacoes) {
+        Consumo novoConsumo = new Consumo();
+        novoConsumo.setUser(user);
+        novoConsumo.setData(data);
+        novoConsumo.setLeitura(leitura);
+        novoConsumo.setTipo(tipo);
+        novoConsumo.setObservacoes(observacoes);
+        
+        return registrarConsumoCompleto(novoConsumo);
     }
 
     @Transactional
@@ -44,21 +88,17 @@ public class ConsumoService {
                 double leituraAnterior = ultimoConsumo.getLeitura();
                 double leituraAtual = novoConsumo.getLeitura();
                 
-                // Calcula o consumo considerando possível reinício do medidor
                 double consumoLitros;
                 if (leituraAtual < leituraAnterior) {
-                    // Medidor reiniciou - soma o que faltava até CAPACIDADE_MAXIMA_MEDIDOR + nova leitura
                     double consumoAteReiniciar = (CAPACIDADE_MAXIMA_MEDIDOR - leituraAnterior);
                     double consumoAposReiniciar = leituraAtual;
                     consumoLitros = (consumoAteReiniciar + consumoAposReiniciar) * 1000;
                 } else {
-                    // Cálculo normal
                     consumoLitros = (leituraAtual - leituraAnterior) * 1000;
                 }
                 
                 novoConsumo.setConsumoLitros(consumoLitros);
                 
-                // Verifica se houve economia em relação à média
                 Double mediaConsumo = getMediaDiariaUltimos30Dias(novoConsumo.getUser()) * 30;
                 if (mediaConsumo > 0 && consumoLitros < mediaConsumo) {
                     novoConsumo.setEconomia(mediaConsumo - consumoLitros);
@@ -66,20 +106,17 @@ public class ConsumoService {
                     novoConsumo.setEconomia(0.0);
                 }
             } else {
-                // Primeiro registro
                 novoConsumo.setConsumoLitros(novoConsumo.getLeitura() * 1000);
                 novoConsumo.setEconomia(0.0);
             }
             
-            // Garante valores padrão
             if (novoConsumo.getData() == null) {
                 novoConsumo.setData(LocalDate.now());
             }
 
-            // Salva o consumo
             Consumo consumoSalvo = consumoRepository.save(novoConsumo);
+            atualizarConsumoMensal(novoConsumo.getUser(), YearMonth.from(novoConsumo.getData()));
 
-            // Atualiza a meta se existir
             Meta metaAtiva = metaService.getMetaAtiva(novoConsumo.getUser());
             if (metaAtiva != null) {
                 atualizarProgressoMeta(metaAtiva, novoConsumo.getUser());
@@ -93,9 +130,40 @@ public class ConsumoService {
         }
     }
 
+    public Double getEconomiaTotal(User user) {
+        LocalDate inicioDeMes = LocalDate.now().withDayOfMonth(1);
+        LocalDate fimDeMes = LocalDate.now();
+        
+        Double economiaTotal = consumoRepository.findTotalEconomiaByUserAndPeriod(
+            user, 
+            inicioDeMes,
+            fimDeMes
+        );
+        
+        return economiaTotal != null ? economiaTotal : 0.0;
+    }
+
+    private void atualizarConsumoMensal(User user, YearMonth mes) {
+        LocalDate inicio = mes.atDay(1);
+        LocalDate fim = mes.atEndOfMonth();
+        Double totalConsumo = consumoRepository.findTotalConsumoByUserAndPeriod(user, inicio, fim);
+        
+        if (totalConsumo == null) totalConsumo = 0.0;
+
+        Optional<ConsumoMensal> consumoMensalOpt = consumoMensalRepository.findByUserAndMesReferencia(user, mes);
+        ConsumoMensal consumoMensal = consumoMensalOpt.orElseGet(() -> {
+            ConsumoMensal novo = new ConsumoMensal();
+            novo.setUser(user);
+            novo.setMesReferencia(mes);
+            return novo;
+        });
+        
+        consumoMensal.setLeituraTotal(totalConsumo);
+        consumoMensalRepository.save(consumoMensal);
+    }
+
     private void atualizarProgressoMeta(Meta meta, User user) {
         try {
-            // Recalcula progresso da meta
             double consumoTotal = calcularConsumoTotalPeriodo(
                 user, 
                 meta.getDataInicio(), 
@@ -142,8 +210,9 @@ public class ConsumoService {
     }
 
     public Double getConsumoMesAnterior(User user) {
-        LocalDate inicio = LocalDate.now().minusMonths(1).withDayOfMonth(1);
-        LocalDate fim = YearMonth.now().minusMonths(1).atEndOfMonth();
+        YearMonth mesAnterior = YearMonth.now().minusMonths(1);
+        LocalDate inicio = mesAnterior.atDay(1);
+        LocalDate fim = mesAnterior.atEndOfMonth();
         Double consumo = consumoRepository.findTotalConsumoByUserAndPeriod(user, inicio, fim);
         return consumo != null ? consumo : 0.0;
     }
@@ -198,20 +267,6 @@ public class ConsumoService {
         return alertas;
     }
 
-    public Double getEconomiaTotal(User user) {
-        try {
-            Double economiaTotal = consumoRepository.findTotalEconomiaByUserAndPeriod(
-                user,
-                LocalDate.now().minusMonths(1),
-                LocalDate.now()
-            );
-            return economiaTotal != null ? economiaTotal : 0.0;
-        } catch (Exception e) {
-            System.err.println("Erro ao calcular economia total: " + e.getMessage());
-            return 0.0;
-        }
-    }
-
     private Double getMediaDiariaUltimos30Dias(User user) {
         try {
             LocalDate fim = LocalDate.now();
@@ -225,21 +280,124 @@ public class ConsumoService {
     }
 
     @Transactional
-    public void excluirConsumo(Long id) {
-        Consumo consumo = consumoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Registro não encontrado"));
-            
-        consumoRepository.delete(consumo);
+    public void registrarConsumoMensal(User user, YearMonth mes, Double leituraTotal, String observacoes) {
+        LocalDate inicioDeMes = mes.atDay(1);
+        LocalDate fimDeMes = mes.atEndOfMonth();
         
-        // Após excluir, atualiza a meta do usuário
-        Meta metaAtiva = metaService.getMetaAtiva(consumo.getUser());
+        // Exclui consumos diários existentes do mês
+        List<Consumo> consumosExistentes = consumoRepository.findConsumosByUserAndPeriod(user, inicioDeMes, fimDeMes);
+        if (!consumosExistentes.isEmpty()) {
+            consumoRepository.deleteAll(consumosExistentes);
+        }
+        
+        // Distribui o consumo total pelos dias do mês
+        int diasNoMes = mes.lengthOfMonth();
+        double consumoDiario = leituraTotal / diasNoMes;
+        
+        for (int dia = 1; dia <= diasNoMes; dia++) {
+            Consumo consumo = new Consumo();
+            consumo.setUser(user);
+            consumo.setData(mes.atDay(dia));
+            consumo.setLeitura(consumoDiario);
+            consumo.setTipo("REGULAR");
+            consumo.setObservacoes(observacoes);
+            consumo.setConsumoLitros(consumoDiario);
+            
+            consumoRepository.save(consumo);
+        }
+
+        // Atualiza ou cria o registro mensal
+        ConsumoMensal consumoMensal = consumoMensalRepository
+            .findByUserAndMesReferencia(user, mes)
+            .orElse(new ConsumoMensal());
+            
+        consumoMensal.setUser(user);
+        consumoMensal.setMesReferencia(mes);
+        consumoMensal.setLeituraTotal(leituraTotal);
+        consumoMensal.setObservacoes(observacoes);
+        consumoMensalRepository.save(consumoMensal);
+
+        // Atualiza meta se existir
+        Meta metaAtiva = metaService.getMetaAtiva(user);
         if (metaAtiva != null) {
-            atualizarProgressoMeta(metaAtiva, consumo.getUser());
+            atualizarProgressoMeta(metaAtiva, user);
         }
     }
 
     @Transactional
-    public void excluirTodosConsumos(User user) {
+    public void excluirTodosConsumosDiarios(User user) {
         consumoRepository.deleteByUser(user);
+        
+        // Atualiza todos os registros mensais
+        List<ConsumoMensal> consumosMensais = consumoMensalRepository.findByUserOrderByMesReferenciaDesc(user);
+        for (ConsumoMensal mensal : consumosMensais) {
+            mensal.setLeituraTotal(0.0);
+            mensal.setConsumoTotal(0.0);
+            mensal.setMediaDiaria(0.0);
+        }
+        consumoMensalRepository.saveAll(consumosMensais);
+        
+        Meta metaAtiva = metaService.getMetaAtiva(user);
+        if (metaAtiva != null) {
+            atualizarProgressoMeta(metaAtiva, user);
+        }
     }
+
+    @Transactional
+    public void excluirTodosConsumosMensais(User user) {
+        // Primeiro, excluir todos os registros mensais
+        consumoMensalRepository.deleteByUser(user);
+        
+        // Em seguida, excluir todos os consumos diários
+        consumoRepository.deleteByUser(user);
+        
+        // Por fim, atualizar a meta se existir
+        Meta metaAtiva = metaService.getMetaAtiva(user);
+        if (metaAtiva != null) {
+            atualizarProgressoMeta(metaAtiva, user);
+        }
+    }
+
+    @Transactional
+    public void excluirConsumoDiario(Long id) {
+        Consumo consumo = consumoRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Registro não encontrado"));
+            
+        User user = consumo.getUser();
+        YearMonth mes = YearMonth.from(consumo.getData());
+        
+        consumoRepository.delete(consumo);
+        atualizarConsumoMensal(user, mes);
+        
+        Meta metaAtiva = metaService.getMetaAtiva(user);
+        if (metaAtiva != null) {
+            atualizarProgressoMeta(metaAtiva, user);
+        }
+    }
+    @Transactional
+    public void excluirConsumoMensal(Long id) {
+        ConsumoMensal consumoMensal = consumoMensalRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Registro mensal não encontrado"));
+            
+        User user = consumoMensal.getUser();
+        YearMonth mes = consumoMensal.getMesReferencia();
+        
+        // Exclui todos os consumos diários do mês
+        LocalDate inicio = mes.atDay(1);
+        LocalDate fim = mes.atEndOfMonth();
+        List<Consumo> consumosDiarios = consumoRepository.findConsumosByUserAndPeriod(user, inicio, fim);
+        consumoRepository.deleteAll(consumosDiarios);
+        
+        // Exclui o registro mensal
+        consumoMensalRepository.delete(consumoMensal);
+        
+        Meta metaAtiva = metaService.getMetaAtiva(user);
+        if (metaAtiva != null) {
+            atualizarProgressoMeta(metaAtiva, user);
+        }
+    }
+
+   
+
+
 }

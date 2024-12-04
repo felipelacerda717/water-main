@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
-    <!-- Header igual ao dashboard -->
+    <!-- Header -->
     <header class="bg-blue-600 text-white">
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
@@ -25,26 +25,28 @@
     </header>
 
     <div class="flex">
-        <!-- Sidebar igual ao dashboard -->
+        <!-- Sidebar -->
         <div th:replace="fragments/sidebar :: sidebar"></div>
 
         <!-- Main Content -->
         <main class="flex-1 p-8">
-           <!-- Mensagens de Feedback -->
-<div th:if="${sucessoMsg}" class="mb-4">
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-        <span class="block sm:inline" th:text="${sucessoMsg}"></span>
-    </div>
-</div>
-<div th:if="${erroMsg}" class="mb-4">
-    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <span class="block sm:inline" th:text="${erroMsg}"></span>
-    </div>
-</div> 
-            <div class="max-w-2xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6">Registrar Consumo de Água</h2>
+            <!-- Mensagens de Feedback -->
+            <div th:if="${sucessoMsg}" class="mb-4">
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline" th:text="${sucessoMsg}"></span>
+                </div>
+            </div>
+            <div th:if="${erroMsg}" class="mb-4">
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline" th:text="${erroMsg}"></span>
+                </div>
+            </div>
 
+            <!-- Grid para os dois formulários -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Formulário de Registro Diário -->
                 <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-6">Registrar Consumo Diário</h2>
                     <form action="/consumo/registrar" method="POST" class="space-y-6">
                         <!-- Data da Leitura -->
                         <div>
@@ -82,9 +84,9 @@
 
                         <!-- Botões -->
                         <div class="flex justify-end space-x-4">
-                            <button type="button" onclick="window.location.href='/dashboard'"
+                            <button type="reset"
                                 class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                Cancelar
+                                Limpar
                             </button>
                             <button type="submit"
                                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -94,63 +96,170 @@
                     </form>
                 </div>
 
-                
-
-                <!-- Últimos Registros -->
-                <div class="mt-8 bg-white rounded-lg shadow">
-                    <div class="p-6">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Últimos Registros</h3>
-                        <div class="mb-4 flex justify-end">
-                            <form th:action="@{/consumo/excluir-todos}" method="POST" 
-                                  onsubmit="return confirm('Tem certeza que deseja excluir TODOS os registros de consumo?');">
-                                <button type="submit" 
-                                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                                    Excluir Todos os Registros
-                                </button>
-                            </form>
+                <!-- Formulário de Registro Mensal -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold mb-6">Registrar Consumo Mensal</h2>
+                    <form action="/consumo/registrar-mensal" method="POST" class="space-y-6">
+                        <!-- Mês de Referência -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Mês de Referência</label>
+                            <input type="month" name="mes" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
-                        <div class="overflow-x-auto">
+
+                        <!-- Leitura Total do Mês -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Leitura Total do Mês (em m³)</label>
+                            <input type="number" name="leituraTotal" step="0.01" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="Ex: 30.5">
+                        </div>
+
+                        <!-- Observações -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Observações</label>
+                            <textarea name="observacoes" rows="2"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="Observações sobre o consumo mensal..."></textarea>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="flex justify-end space-x-4">
+                            <button type="reset"
+                                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                Limpar
+                            </button>
+                            <button type="submit"
+                                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Registrar Consumo Mensal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Histórico com Abas -->
+            <div class="mt-8">
+                <!-- Navegação das Abas -->
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex" aria-label="Tabs">
+                        <button onclick="showTab('diario')"
+                                class="tablink w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm text-blue-600 border-blue-500"
+                                id="diario-tab">
+                            Histórico Diário
+                        </button>
+                        <button onclick="showTab('mensal')"
+                                class="tablink w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
+                                id="mensal-tab">
+                            Histórico Mensal
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Conteúdo da Aba Diária -->
+                <div id="diario" class="tab-content">
+                    <div class="bg-white shadow rounded-lg mt-4">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center space-x-4">
+                                    <h3 class="text-lg font-medium text-gray-900">Registros Diários</h3>
+                                    <select onchange="filtrarMes(this.value)" 
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                        <option value="">Todos os Meses</option>
+                                        <option th:each="mes : ${mesesDisponiveis}" 
+                                                th:value="${mes}"
+                                                th:text="${mes}">
+                                            Janeiro 2024
+                                        </option>
+                                    </select>
+                                </div>
+                                <form th:action="@{/consumo/excluir-todos-diarios}" method="POST" 
+                                      onsubmit="return confirm('Tem certeza que deseja excluir todos os registros diários?');">
+                                    <button type="submit" 
+                                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                        Excluir Todos
+                                    </button>
+                                </form>
+                            </div>
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Data
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Leitura (m³)
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Tipo
-                                        </th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Consumo
-                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leitura (m³)</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr th:each="consumo : ${consumos}">
+                                    <tr th:each="consumo : ${consumosDiarios}">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
-                                            th:text="${#temporals.format(consumo.data, 'dd/MM/yyyy')}">
-                                        </td>
+                                            th:text="${#temporals.format(consumo.data, 'dd/MM/yyyy')}"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
-                                            th:text="${#numbers.formatDecimal(consumo.leitura, 1, 2)}">
-                                        </td>
+                                            th:text="${#numbers.formatDecimal(consumo.leitura, 1, 2)}"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
-                                            th:text="${consumo.tipo}">
-                                        </td>
+                                            th:text="${consumo.tipo}"></td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
-                                            th:text="${#numbers.formatDecimal(consumo.consumoLitros, 1, 0) + ' L'}">
-                                        </td>
+                                            th:text="${#numbers.formatDecimal(consumo.consumoLitros, 1, 0) + ' L'}"></td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <form th:action="@{/consumo/excluir/{id}(id=${consumo.id})}" method="POST" 
+                                            <form th:action="@{/consumo/excluir/{id}(id=${consumo.id})}" method="POST"
                                                   onsubmit="return confirm('Tem certeza que deseja excluir este registro?');">
                                                 <button type="submit" 
-                                                        class="text-red-600 hover:text-red-900 px-3 py-1 rounded-md text-sm font-medium
-                                                               hover:bg-red-100 transition duration-150 ease-in-out">
+                                                        class="text-red-600 hover:text-red-900 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-100">
                                                     Excluir
                                                 </button>
                                             </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo da Aba Mensal -->
+                <div id="mensal" class="tab-content" style="display: none;">
+                    <div class="bg-white shadow rounded-lg mt-4">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-medium text-gray-900">Registros Mensais</h3>
+                                <form th:action="@{/consumo/excluir-todos-mensais}" method="POST"
+                                      onsubmit="return confirm('Tem certeza que deseja excluir todos os registros mensais?');">
+                                    <button type="submit" 
+                                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                        Excluir Todos
+                                    </button>
+                                </form>
+                            </div>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mês</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Leitura Total (m³)</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Média Diária</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr th:each="consumo : ${consumosMensais}">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
+                                            th:text="${consumo.mesReferencia}"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
+                                            th:text="${#numbers.formatDecimal(consumo.leituraTotal, 1, 2)}"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
+                                            th:text="${#numbers.formatDecimal(consumo.mediaDiaria, 1, 2) + ' m³'}"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" 
+                                            th:text="${#numbers.formatDecimal(consumo.consumoTotal, 1, 0) + ' L'}"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <form th:action="@{/consumo/excluir-mensal/{id}(id=${consumo.id})}" method="POST"
+                                                  onsubmit="return confirm('Tem certeza que deseja excluir este registro mensal?');">
+                                                <button type="submit" 
+                                                        class="text-red-600 hover:text-red-900 px-3 py-1 rounded-md text-sm font-medium hover:bg-red-100">
+                                                    Excluir
+                                                </button>
+                                            </form>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -160,5 +269,38 @@
             </div>
         </main>
     </div>
+
+    <!-- JavaScript para controle das abas -->
+    <script>
+        function showTab(tabName) {
+            // Esconde todas as tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Remove classe ativa de todas as tabs
+            document.querySelectorAll('.tablink').forEach(tab => {
+                tab.classList.remove('border-blue-500', 'text-blue-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Mostra a tab selecionada
+            document.getElementById(tabName).style.display = 'block';
+            
+            // Ativa a tab clicada
+            document.getElementById(tabName + '-tab').classList.remove('border-transparent', 'text-gray-500');
+            document.getElementById(tabName + '-tab').classList.add('border-blue-500', 'text-blue-600');
+        }
+
+        function filtrarMes(mes) {
+            // Implementar a lógica de filtro por mês
+            window.location.href = '/consumo?mes=' + mes;
+        }
+
+        // Inicializa mostrando a primeira tab
+        document.addEventListener('DOMContentLoaded', function() {
+            showTab('diario');
+        });
+    </script>
 </body>
 </html>

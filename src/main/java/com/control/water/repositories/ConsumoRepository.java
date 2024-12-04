@@ -10,12 +10,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ConsumoRepository extends JpaRepository<Consumo, Long> {
-    // Métodos existentes
+    // Métodos existentes mantidos
     List<Consumo> findByUserOrderByDataDesc(User user);
     
     Optional<Consumo> findByUserAndData(User user, LocalDate data);
@@ -37,7 +38,6 @@ public interface ConsumoRepository extends JpaRepository<Consumo, Long> {
     @Query("SELECT c FROM Consumo c WHERE c.user = :user ORDER BY c.data DESC LIMIT 1")
     Optional<Consumo> findLastConsumoByUser(@Param("user") User user);
     
-    // Novos métodos
     @Query("SELECT c FROM Consumo c WHERE c.user = :user ORDER BY c.data DESC")
     List<Consumo> findLatestByUser(@Param("user") User user, Pageable pageable);
     
@@ -67,7 +67,30 @@ public interface ConsumoRepository extends JpaRepository<Consumo, Long> {
     @Modifying
     @Query("DELETE FROM Consumo c WHERE c.user = :user")
     void deleteByUser(@Param("user") User user);
-};
 
+    // Novos métodos para suporte ao filtro por mês
+    @Query("SELECT DISTINCT EXTRACT(YEAR FROM c.data) * 100 + EXTRACT(MONTH FROM c.data) as yearMonth " +
+    "FROM Consumo c WHERE c.user = :user " +
+    "ORDER BY yearMonth DESC")
+List<Integer> findDistinctYearMonthsByUser(@Param("user") User user);
+
+    @Query("SELECT c FROM Consumo c WHERE c.user = :user " +
+           "AND FUNCTION('date_trunc', 'month', c.data) = :mes " +
+           "ORDER BY c.data DESC")
+    List<Consumo> findByUserAndMes(
+        @Param("user") User user, 
+        @Param("mes") YearMonth mes
+    );
 
     
+    // Método para buscar consumos por período específico
+    @Query("SELECT c FROM Consumo c WHERE c.user = :user " +
+           "AND EXTRACT(YEAR from c.data) = :ano " +
+           "AND EXTRACT(MONTH from c.data) = :mes " +
+           "ORDER BY c.data DESC")
+    List<Consumo> findByUserAndAnoMes(
+        @Param("user") User user, 
+        @Param("ano") int ano,
+        @Param("mes") int mes
+    );
+}

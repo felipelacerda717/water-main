@@ -1,54 +1,53 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" 
+      th:fragment="main-layout (title, content)">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaMonitor - Dashboard</title>
+    <title th:text="${title}">AquaMonitor</title>
+    
+    <!-- CSS comum -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Chart.js para os gráficos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-50">
-    <div th:fragment="header">
-        <header class="bg-blue-600 text-white">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex justify-between items-center">
-                    <div class="text-2xl font-bold">AquaMonitor</div>
-                    <div class="flex items-center space-x-4">
-                        <span>Olá, Usuário</span>
-                        <button class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
-                            Perfil
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
-    </div>
-
-    <div th:fragment="sidebar">
-        <aside class="w-64 min-h-screen bg-white shadow-md">
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+    
+    <!-- Main Container -->
+    <div class="flex flex-1">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md">
             <nav class="p-4">
-                <ul class="space-y-2">
-                    <li>
-                        <a href="/dashboard" class="flex items-center space-x-2 w-full p-2 rounded-lg bg-blue-50 text-blue-600">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
-                            </svg>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
+                <div class="space-y-4">
+                    <!-- Dashboard -->
+                    <a th:href="@{/dashboard}" 
+                       class="flex items-center space-x-3 p-3 rounded-lg hover:bg-blue-50 transition-colors"
+                       th:classappend="${#httpServletRequest.requestURI == '/dashboard' ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
                     <!-- Outros itens do menu -->
-                </ul>
+                </div>
             </nav>
         </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            <div th:replace="${content}">
+                <!-- Conteúdo específico da página será inserido aqui -->
+            </div>
+        </main>
     </div>
 
-    <div th:fragment="footer">
-        <footer class="bg-white border-t mt-8">
-            <div class="container mx-auto px-4 py-4 text-center text-gray-600">
+    <!-- Footer -->
+    <footer class="bg-white border-t mt-auto">
+        <div class="container mx-auto px-4 py-4">
+            <div class="text-sm text-gray-600 text-center">
                 AquaMonitor © 2024
             </div>
-        </footer>
-    </div>
+        </div>
+    </footer>
 </body>
 </html>

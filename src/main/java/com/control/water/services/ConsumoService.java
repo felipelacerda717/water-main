@@ -3,15 +3,12 @@ package com.control.water.services;
 import com.control.water.models.*;
 import com.control.water.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.util.*;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.*;
-
 @Service
 public class ConsumoService {
 
@@ -89,23 +86,23 @@ public class ConsumoService {
                 double leituraAtual = novoConsumo.getLeitura();
                 
                 double consumoLitros;
-                if (leituraAtual < leituraAnterior) {
+                if (leituraAtual == leituraAnterior) {
+                    consumoLitros = leituraAtual * 1000;  // Usa a leitura atual em vez da diferença
+                } else if (leituraAtual < leituraAnterior) {
+                    // Caso onde o medidor reiniciou
                     double consumoAteReiniciar = (CAPACIDADE_MAXIMA_MEDIDOR - leituraAnterior);
                     double consumoAposReiniciar = leituraAtual;
                     consumoLitros = (consumoAteReiniciar + consumoAposReiniciar) * 1000;
                 } else {
+                    // Caso normal: diferença entre leituras
                     consumoLitros = (leituraAtual - leituraAnterior) * 1000;
                 }
                 
-                novoConsumo.setConsumoLitros(consumoLitros);
                 
-                Double mediaConsumo = getMediaDiariaUltimos30Dias(novoConsumo.getUser()) * 30;
-                if (mediaConsumo > 0 && consumoLitros < mediaConsumo) {
-                    novoConsumo.setEconomia(mediaConsumo - consumoLitros);
-                } else {
-                    novoConsumo.setEconomia(0.0);
-                }
+                novoConsumo.setConsumoLitros(consumoLitros);
+                calcularEconomia(novoConsumo);
             } else {
+                // Primeiro registro: consumo é a própria leitura
                 novoConsumo.setConsumoLitros(novoConsumo.getLeitura() * 1000);
                 novoConsumo.setEconomia(0.0);
             }
@@ -130,19 +127,87 @@ public class ConsumoService {
         }
     }
 
-    public Double getEconomiaTotal(User user) {
-        LocalDate inicioDeMes = LocalDate.now().withDayOfMonth(1);
-        LocalDate fimDeMes = LocalDate.now();
+    private void calcularEconomia(Consumo novoConsumo) {
+        // Busca primeiro mês de consumo do usuário para estabelecer a média base
+        LocalDate primeiroMes = consumoRepository.findFirstConsumoDate(novoConsumo.getUser());
         
-        Double economiaTotal = consumoRepository.findTotalEconomiaByUserAndPeriod(
-            user, 
-            inicioDeMes,
-            fimDeMes
+        if (primeiroMes == null || novoConsumo.getData().getYear() == primeiroMes.getYear() 
+            && novoConsumo.getData().getMonth() == primeiroMes.getMonth()) {
+            // Primeiro mês - estabelece média (economia = 0)
+            novoConsumo.setEconomia(0.0);
+            return;
+        }
+    
+        // Pega a média do primeiro mês
+        LocalDate inicioPrimeiroMes = primeiroMes.withDayOfMonth(1);
+        LocalDate fimPrimeiroMes = primeiroMes.withDayOfMonth(primeiroMes.lengthOfMonth());
+        
+        Double mediaBaseMensal = consumoRepository.findTotalConsumoByUserAndPeriod(
+            novoConsumo.getUser(),
+            inicioPrimeiroMes,
+            fimPrimeiroMes
         );
-        
-        return economiaTotal != null ? economiaTotal : 0.0;
+    
+        if (mediaBaseMensal == null || mediaBaseMensal == 0.0) {
+            novoConsumo.setEconomia(0.0);
+            return;
+        }
+    
+        // Calcula economia com base na média do primeiro mês
+        // Positivo se consumiu menos que a média, negativo se consumiu mais
+        double economia = mediaBaseMensal - novoConsumo.getConsumoLitros();
+        novoConsumo.setEconomia(economia);
     }
 
+
+    public Double getEconomiaTotal(User user) {
+        // Busca o primeiro mês para estabelecer a média base
+        LocalDate primeiroMes = consumoRepository.findFirstConsumoDate(user);
+        if (primeiroMes == null) {
+            return 0.0;
+        }
+    
+        YearMonth mesPrimeiro = YearMonth.from(primeiroMes);
+        LocalDate inicioPrimeiroMes = mesPrimeiro.atDay(1);
+        LocalDate fimPrimeiroMes = mesPrimeiro.atEndOfMonth();
+    
+        // Pega o consumo do primeiro mês (esse será nossa base de comparação)
+        Double consumoPrimeiroMes = consumoRepository.findTotalConsumoByUserAndPeriod(
+            user,
+            inicioPrimeiroMes,
+            fimPrimeiroMes
+        );
+    
+        if (consumoPrimeiroMes == null || consumoPrimeiroMes == 0.0) {
+            return 0.0;
+        }
+    
+        // Calcula a economia de cada mês subsequente
+        double economiaTotal = 0.0;
+        YearMonth mesAtual = YearMonth.now();
+        YearMonth mesLoop = mesPrimeiro.plusMonths(1); // Começa do segundo mês
+    
+        while (!mesLoop.isAfter(mesAtual)) {
+            LocalDate inicioMes = mesLoop.atDay(1);
+            LocalDate fimMes = mesLoop.atEndOfMonth();
+    
+            Double consumoMes = consumoRepository.findTotalConsumoByUserAndPeriod(
+                user,
+                inicioMes,
+                fimMes
+            );
+    
+            if (consumoMes != null) {
+                // Se consumiu menos que o primeiro mês = economia positiva
+                // Se consumiu mais que o primeiro mês = economia negativa
+                economiaTotal += (consumoPrimeiroMes - consumoMes);
+            }
+    
+            mesLoop = mesLoop.plusMonths(1);
+        }
+    
+        return economiaTotal;
+    }
     private void atualizarConsumoMensal(User user, YearMonth mes) {
         LocalDate inicio = mes.atDay(1);
         LocalDate fim = mes.atEndOfMonth();
@@ -283,48 +348,56 @@ public class ConsumoService {
     public void registrarConsumoMensal(User user, YearMonth mes, Double leituraTotal, String observacoes) {
         LocalDate inicioDeMes = mes.atDay(1);
         LocalDate fimDeMes = mes.atEndOfMonth();
+        int diasNoMes = mes.lengthOfMonth();
         
-        // Exclui consumos diários existentes do mês
+        // Busca a última leitura do mês anterior
+        Optional<Consumo> ultimoConsumoOpt = consumoRepository.findLastConsumoBeforeDate(user.getId(), inicioDeMes);
+    double leituraAnterior = ultimoConsumoOpt.map(Consumo::getLeitura).orElse(0.0);
+    
+    double consumoReal = leituraTotal - leituraAnterior; // Consumo real em m³
+    double mediaDiariaM3 = consumoReal / diasNoMes;      // Média diária correta
+    double consumoDiarioLitros = consumoReal * 1000 / diasNoMes; // Em litros
+        
+        // Exclui registros existentes
         List<Consumo> consumosExistentes = consumoRepository.findConsumosByUserAndPeriod(user, inicioDeMes, fimDeMes);
         if (!consumosExistentes.isEmpty()) {
             consumoRepository.deleteAll(consumosExistentes);
         }
         
-        // Distribui o consumo total pelos dias do mês
-        int diasNoMes = mes.lengthOfMonth();
-        double consumoDiario = leituraTotal / diasNoMes;
-        
+        // Cria os registros diários
         for (int dia = 1; dia <= diasNoMes; dia++) {
             Consumo consumo = new Consumo();
             consumo.setUser(user);
             consumo.setData(mes.atDay(dia));
-            consumo.setLeitura(consumoDiario);
+            consumo.setLeitura(leituraTotal);           // Mantém a leitura total
             consumo.setTipo("REGULAR");
             consumo.setObservacoes(observacoes);
-            consumo.setConsumoLitros(consumoDiario);
+            consumo.setConsumoLitros(consumoDiarioLitros); // Consumo diário baseado na diferença
             
             consumoRepository.save(consumo);
         }
-
-        // Atualiza ou cria o registro mensal
+    
+        // Atualiza o registro mensal
         ConsumoMensal consumoMensal = consumoMensalRepository
             .findByUserAndMesReferencia(user, mes)
             .orElse(new ConsumoMensal());
             
         consumoMensal.setUser(user);
         consumoMensal.setMesReferencia(mes);
-        consumoMensal.setLeituraTotal(leituraTotal);
+        consumoMensal.setLeituraTotal(leituraTotal);       // Leitura total em m³
+        consumoMensal.setMediaDiaria(mediaDiariaM3);       // Média diária em m³ (baseada na diferença)
+        consumoMensal.setConsumoTotal(consumoReal * 1000); // Consumo total em litros (baseado na diferença)
         consumoMensal.setObservacoes(observacoes);
+        
         consumoMensalRepository.save(consumoMensal);
-
-        // Atualiza meta se existir
+    
         Meta metaAtiva = metaService.getMetaAtiva(user);
         if (metaAtiva != null) {
             atualizarProgressoMeta(metaAtiva, user);
         }
     }
 
-    @Transactional
+@Transactional
     public void excluirTodosConsumosDiarios(User user) {
         consumoRepository.deleteByUser(user);
         

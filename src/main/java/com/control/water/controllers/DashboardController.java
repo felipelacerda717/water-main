@@ -1,7 +1,6 @@
 package com.control.water.controllers;
 
 import com.control.water.models.User;
-import com.control.water.models.Consumo;
 import com.control.water.models.Meta;
 import com.control.water.services.ConsumoService;
 import com.control.water.services.MetaService;
@@ -13,12 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.control.water.services.RankingService;
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.List;
-import java.util.Optional;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 
 @Controller
 @RequestMapping("/dashboard")
@@ -39,7 +35,13 @@ public class DashboardController {
     @GetMapping
     public String dashboard(Model model, Authentication authentication) {
         User user = userRepository.findByEmail(authentication.getName());
-        
+        boolean consumoElevado = true;
+
+
+        if (consumoElevado) {
+            model.addAttribute("showAlert", true);
+            model.addAttribute("alertMessage", "Seu consumo está 30% acima da média!");
+        }
         // Dados existentes
         Double consumoHoje = consumoService.getConsumoHoje(user);
         Double consumoMesAtual = consumoService.getConsumoMesAtual(user);

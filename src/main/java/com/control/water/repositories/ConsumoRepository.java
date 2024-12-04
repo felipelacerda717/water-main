@@ -48,14 +48,24 @@ public interface ConsumoRepository extends JpaRepository<Consumo, Long> {
         @Param("endDate") LocalDate endDate
     );
     
-    @Query("SELECT COALESCE(SUM(CASE WHEN c.consumoLitros < 0 THEN ABS(c.consumoLitros) ELSE 0 END), 0) " +
-           "FROM Consumo c WHERE c.user = :user AND c.data BETWEEN :startDate AND :endDate")
-    Double findTotalEconomiaByUserAndPeriod(
-        @Param("user") User user, 
-        @Param("startDate") LocalDate startDate, 
-        @Param("endDate") LocalDate endDate
+        @Query("SELECT AVG(c.consumoLitros) FROM Consumo c " +
+        "WHERE c.user = :user AND c.data BETWEEN :startDate AND :endDate")
+    Double findMediaConsumoByPeriod(
+    @Param("user") User user, 
+    @Param("startDate") LocalDate startDate, 
+    @Param("endDate") LocalDate endDate
     );
-    
+
+    @Query("SELECT COALESCE(SUM(c.economia), 0.0) FROM Consumo c " +
+    "WHERE c.user = :user AND c.data BETWEEN :startDate AND :endDate")
+Double findTotalEconomiaByUserAndPeriod(
+ @Param("user") User user, 
+ @Param("startDate") LocalDate startDate, 
+ @Param("endDate") LocalDate endDate
+);
+@Query("SELECT MIN(c.data) FROM Consumo c WHERE c.user = :user")
+LocalDate findFirstConsumoDate(@Param("user") User user);
+
     @Query(value = "SELECT c.* FROM consumo c " +
                    "WHERE c.user_id = :userId AND c.data <= :date " +
                    "ORDER BY c.data DESC LIMIT 1", nativeQuery = true)

@@ -5,57 +5,128 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaMonitor - Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-50">
+    <!-- Notification Banner -->
+    <div th:each="alerta : ${alertas}" class="bg-yellow-50 border-b border-yellow-200">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-yellow-800 font-medium" th:text="${alerta}">Alerta de consumo elevado</span>
+                        <span class="text-xs text-yellow-600">Clique para ver mais detalhes</span>
+                    </div>
+                </div>
+                <button class="text-yellow-600 hover:text-yellow-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
-    <header class="bg-blue-600 text-white">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="text-2xl font-bold">AquaMonitor</div>
-                <div class="flex items-center space-x-4">
-                    <span th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+<header class="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo Section -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='/dashboard'">
+                <div class="rounded-lg bg-white/10 p-2">
+                    <i class="fas fa-tint text-2xl text-white"></i>
+                </div>
+                <div class="flex flex-col">
+                    <div class="text-xl font-bold tracking-wider">AquaMonitor</div>
+                    <div class="text-xs text-blue-100">Economia Inteligente de Água</div>
+                </div>
+            </div>
+
+            <!-- User Section -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
+                    <div class="flex flex-col text-right">
+                        <span class="text-sm font-medium" th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+                        <span class="text-xs text-blue-100">Usuário Residencial</span>
+                    </div>
+                    <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-user text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- Logout Button (mostrar em dashboard, consumo, metas e dicas) -->
+                <div th:if="${!#lists.contains({'ranking', 'conquistas'}, activeMenu)}">
                     <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
-                            Sair
+                        <button type="submit" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            <span>Sair</span>
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
     <div class="flex">
         <!-- Sidebar -->
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <aside class="w-64 bg-white shadow-md min-h-screen">
+            <nav class="p-4">
+                <div class="space-y-4">
+                    <!-- Dashboard -->
+                    <a href="/dashboard" 
+                       class="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <!-- Registrar Consumo -->
+                    <a href="/consumo" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-tint w-5"></i>
+                        <span>Registrar Consumo</span>
+                    </a>
+
+                    <!-- Minhas Metas -->
+                    <a href="/metas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-bullseye w-5"></i>
+                        <span>Minhas Metas</span>
+                    </a>
+
+                    <!-- Dicas de Economia -->
+                    <a href="/dicas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-lightbulb w-5"></i>
+                        <span>Dicas de Economia</span>
+                    </a>
+
+                    <!-- Conquistas -->
+                    <a href="/conquistas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-trophy w-5"></i>
+                        <span>Conquistas</span>
+                    </a>
+
+                    <!-- Ranking -->
+                    <a href="/ranking" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-medal w-5"></i>
+                        <span>Ranking</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
 
         <!-- Main Content -->
         <main class="flex-1 p-8">
-            <!-- Alertas -->
-            <div th:if="${!alertas.empty}" class="mb-6">
-                <div th:each="alerta : ${alertas}" class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-2">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700" th:text="${alerta}"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Status Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <!-- Consumo Hoje -->
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 bg-opacity-75">
-                            <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
+                        <div class="p-3 rounded-full bg-blue-100">
+                            <i class="fas fa-tint text-2xl text-blue-600"></i>
                         </div>
                         <div class="ml-4">
                             <h2 class="text-sm font-medium text-gray-500">Consumo Hoje</h2>
@@ -67,12 +138,10 @@
                 </div>
 
                 <!-- Ranking -->
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 bg-opacity-75">
-                            <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 4v12l-4-2-4 2V4M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
+                        <div class="p-3 rounded-full bg-green-100">
+                            <i class="fas fa-trophy text-2xl text-green-600"></i>
                         </div>
                         <div class="ml-4">
                             <h2 class="text-sm font-medium text-gray-500">Ranking</h2>
@@ -86,12 +155,10 @@
                 </div>
 
                 <!-- Economia Total -->
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-purple-100 bg-opacity-75">
-                            <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
+                        <div class="p-3 rounded-full bg-purple-100">
+                            <i class="fas fa-leaf text-2xl text-purple-600"></i>
                         </div>
                         <div class="ml-4">
                             <h2 class="text-sm font-medium text-gray-500">Economia Total</h2>
@@ -103,12 +170,10 @@
                 </div>
 
                 <!-- Previsão Mensal -->
-                <div class="bg-white rounded-lg shadow p-6">
+                <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 bg-opacity-75">
-                            <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
+                        <div class="p-3 rounded-full bg-yellow-100">
+                            <i class="fas fa-chart-line text-2xl text-yellow-600"></i>
                         </div>
                         <div class="ml-4">
                             <h2 class="text-sm font-medium text-gray-500">Previsão Mensal</h2>
@@ -121,39 +186,49 @@
             </div>
 
             <!-- Gráficos -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <!-- Consumo Semanal -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium mb-4">Consumo Semanal</h3>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-calendar-week text-blue-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-medium">Consumo Semanal</h3>
+                    </div>
                     <canvas id="consumoSemanalChart"></canvas>
                 </div>
 
                 <!-- Comparativo Mensal -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium mb-4">Comparativo Mensal</h3>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-chart-bar text-blue-600 text-xl mr-3"></i>
+                        <h3 class="text-lg font-medium">Comparativo Mensal</h3>
+                    </div>
                     <canvas id="comparativoMensalChart"></canvas>
                 </div>
             </div>
 
             <!-- Meta Atual -->
-            <div th:if="${metaAtual != null}" class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-medium mb-4">Meta Atual</h3>
+            <div th:if="${metaAtual != null}" class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-bullseye text-blue-600 text-xl mr-3"></i>
+                    <h3 class="text-lg font-medium">Meta Atual</h3>
+                </div>
                 <div class="space-y-4">
                     <div class="flex justify-between items-center">
                         <div>
                             <p class="text-lg font-medium" th:text="${metaAtual.descricao}">Meta Mensal</p>
                             <p class="text-sm text-gray-500">
+                                <i class="far fa-calendar-alt mr-2"></i>
                                 <span th:text="${#temporals.format(metaAtual.dataInicio, 'dd/MM')}"></span> - 
                                 <span th:text="${#temporals.format(metaAtual.dataFim, 'dd/MM')}"></span>
                             </p>
                         </div>
                         <div class="text-right">
-                            <p class="text-xl font-semibold text-blue-600" th:text="${#numbers.formatDecimal(metaAtual.progresso, 1, 1) + '%'}">0%</p>
+                            <p class="text-2xl font-semibold text-blue-600" th:text="${#numbers.formatDecimal(metaAtual.progresso, 1, 1) + '%'}">0%</p>
                             <p class="text-sm text-gray-500">do objetivo</p>
                         </div>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                        <div class="bg-blue-600 rounded-full h-2.5 transition-all duration-500"
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-blue-600 rounded-full h-3 transition-all duration-500"
                              th:style="'width: ' + ${metaAtual.progresso + '%'}"></div>
                     </div>
                 </div>
@@ -162,6 +237,10 @@
     </div>
 
     <script th:inline="javascript">
+        // Configuração do Chart.js
+        Chart.defaults.color = '#6B7280';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
         // Dados para os gráficos
         const consumoSemanal = /*[[${consumoSemanal}]]*/ {};
         
@@ -173,21 +252,63 @@
                 datasets: [{
                     label: 'Consumo (L)',
                     data: Object.values(consumoSemanal),
-                    borderColor: 'rgb(59, 130, 246)',
-                    tension: 0.1
+                    borderColor: 'rgb(37, 99, 235)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgb(37, 99, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(37, 99, 235)',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#1F2937',
+                        bodyColor: '#4B5563',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' litros';
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false,
+                            color: 'rgba(107, 114, 128, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + 'L';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
                 }
             }
         });
@@ -205,12 +326,13 @@
                         /*[[${previsaoConsumo}]]*/ 0
                     ],
                     backgroundColor: [
-                        'rgba(59, 130, 246, 0.5)',
-                        'rgba(59, 130, 246, 0.7)',
-                        'rgba(59, 130, 246, 0.9)'
+                        'rgba(37, 99, 235, 0.5)',
+                        'rgba(37, 99, 235, 0.7)',
+                        'rgba(37, 99, 235, 0.9)'
                     ],
-                    borderColor: 'rgb(59, 130, 246)',
-                    borderWidth: 1
+                    borderColor: 'rgb(37, 99, 235)',
+                    borderWidth: 1,
+                    borderRadius: 6
                 }]
             },
             options: {
@@ -218,14 +340,63 @@
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        titleColor: '#1F2937',
+                        bodyColor: '#4B5563',
+                        borderColor: '#E5E7EB',
+                        borderWidth: 1,
+                        padding: 12,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' litros';
+                            }
+                        }
                     }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false,
+                            color: 'rgba(107, 114, 128, 0.1)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + 'L';
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
+        });
+
+        // Funções para interatividade
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fechar alertas
+            document.querySelectorAll('.bg-yellow-50 button').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.closest('.bg-yellow-50').style.display = 'none';
+                });
+            });
+
+            // Adicionar efeitos hover nos cards
+            const cards = document.querySelectorAll('.shadow-lg');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.classList.add('transform', 'scale-105', 'transition-transform');
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.classList.remove('transform', 'scale-105', 'transition-transform');
+                });
+            });
         });
     </script>
 </body>

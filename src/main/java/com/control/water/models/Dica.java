@@ -14,10 +14,9 @@ public class Dica {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
     private String titulo;
     private String descricao;
-    private String categoria; // BANHO, TORNEIRA, LAVAGEM, GERAL, etc.
-    private Integer economiaEstimada; // Economia estimada em litros
-    private String nivelDificuldade; // FACIL, MEDIO, DIFICIL
+    private String categoria;
+    private Integer economiaEstimada;
+    private String nivelDificuldade;
 }

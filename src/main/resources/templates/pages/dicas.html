@@ -5,81 +5,260 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaMonitor - Dicas de Economia</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
+    <!-- Notification Banner -->
+    <div class="bg-yellow-50 border-b border-yellow-200" th:if="${showAlert}">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-yellow-800 font-medium">Atenção: Consumo de hoje está 30% acima da média!</span>
+                        <span class="text-xs text-yellow-600">Clique para ver mais detalhes sobre seu consumo</span>
+                    </div>
+                </div>
+                <button class="text-yellow-600 hover:text-yellow-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
-    <header class="bg-blue-600 text-white">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="text-2xl font-bold">AquaMonitor</div>
-                <div class="flex items-center space-x-4">
-                    <span th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+<header class="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo Section -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='/dashboard'">
+                <div class="rounded-lg bg-white/10 p-2">
+                    <i class="fas fa-tint text-2xl text-white"></i>
+                </div>
+                <div class="flex flex-col">
+                    <div class="text-xl font-bold tracking-wider">AquaMonitor</div>
+                    <div class="text-xs text-blue-100">Economia Inteligente de Água</div>
+                </div>
+            </div>
+
+            <!-- User Section -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
+                    <div class="flex flex-col text-right">
+                        <span class="text-sm font-medium" th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+                        <span class="text-xs text-blue-100">Usuário Residencial</span>
+                    </div>
+                    <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-user text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- Logout Button (mostrar em dashboard, consumo, metas e dicas) -->
+                <div th:if="${!#lists.contains({'ranking', 'conquistas'}, activeMenu)}">
                     <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
-                            Sair
+                        <button type="submit" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            <span>Sair</span>
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
     <div class="flex">
         <!-- Sidebar -->
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <aside class="w-64 bg-white shadow-md min-h-screen">
+            <nav class="p-4">
+                <div class="space-y-4">
+                    <!-- Dashboard -->
+                    <a href="/dashboard" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <!-- Registrar Consumo -->
+                    <a href="/consumo" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-tint w-5"></i>
+                        <span>Registrar Consumo</span>
+                    </a>
+
+                    <!-- Minhas Metas -->
+                    <a href="/metas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-bullseye w-5"></i>
+                        <span>Minhas Metas</span>
+                    </a>
+
+                    <!-- Dicas de Economia -->
+                    <a href="/dicas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                        <i class="fas fa-lightbulb w-5"></i>
+                        <span>Dicas de Economia</span>
+                    </a>
+
+                    <!-- Conquistas -->
+                    <a href="/conquistas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-trophy w-5"></i>
+                        <span>Conquistas</span>
+                    </a>
+
+                    <!-- Ranking -->
+                    <a href="/ranking" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-medal w-5"></i>
+                        <span>Ranking</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
 
         <!-- Main Content -->
         <main class="flex-1 p-8">
             <div class="max-w-6xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6">Dicas de Economia de Água</h2>
+                <!-- Page Title -->
+                <div class="flex items-center mb-6">
+                    <i class="fas fa-lightbulb text-2xl text-yellow-500 mr-3"></i>
+                    <h2 class="text-2xl font-bold">Dicas de Economia de Água</h2>
+                </div>
 
-                <!-- Calculadora de Economia -->
-                <div class="bg-white rounded-lg shadow p-6 mb-6">
-                    <h3 class="text-lg font-medium mb-4">Calculadora de Economia</h3>
+                <!-- Search and Filter Section -->
+                <div class="mb-8">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <input
+                                    type="text"
+                                    id="searchInput"
+                                    placeholder="Pesquisar dicas..."
+                                    class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 overflow-x-auto" id="categoryButtons">
+                            <button
+                                data-categoria="TODAS"
+                                class="categoria-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-blue-600 text-white"
+                            >TODAS</button>
+                            <button
+                                th:each="categoria : ${#arrays.toArray({'BANHO', 'TORNEIRA', 'LAVAGEM', 'GERAL'})}"
+                                th:text="${categoria}"
+                                th:data-categoria="${categoria}"
+                                class="categoria-btn px-4 py-2 rounded-lg font-medium whitespace-nowrap bg-white text-gray-600 hover:bg-gray-100"
+                            ></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculator Section -->
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-calculator text-blue-500 text-xl mr-3"></i>
+                        <h3 class="text-lg font-medium">Calculadora de Economia</h3>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Tempo médio de banho (minutos)</label>
-                            <input type="number" id="tempoBanho" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-shower mr-2"></i>
+                                Tempo médio de banho (minutos)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="tempoBanho" 
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="Ex: 10"
+                            />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Vazamentos (gotas por minuto)</label>
-                            <input type="number" id="vazamentos" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <label class="block text-sm font-medium text-gray-700">
+                                <i class="fas fa-tint mr-2"></i>
+                                Vazamentos (gotas por minuto)
+                            </label>
+                            <input 
+                                type="number" 
+                                id="vazamentos" 
+                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                placeholder="Ex: 20"
+                            />
                         </div>
                         <div class="flex items-end">
-                            <button onclick="calcularEconomia()" class="w-full px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            <button 
+                                id="calcularButton"
+                                class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
+                            >
+                                <i class="fas fa-calculator mr-2"></i>
                                 Calcular Economia
                             </button>
                         </div>
                     </div>
                     <div id="resultadoEconomia" class="mt-4 hidden">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <p class="text-blue-700">Potencial de economia mensal: <span id="economiaTotal">0</span> litros</p>
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="flex items-center">
+                                <i class="fas fa-water text-blue-500 text-xl mr-3"></i>
+                                <div>
+                                    <p class="text-blue-700 font-medium">Potencial de economia mensal:</p>
+                                    <p class="text-blue-600 text-2xl font-bold mt-1">
+                                        <span id="economiaTotal">0</span> litros
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Dicas Personalizadas -->
+                <!-- Tips Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div th:each="dica : ${dicas}" class="bg-white rounded-lg shadow overflow-hidden">
-                        <div class="p-5">
-                            <div class="flex justify-between items-start">
-                                <h4 class="text-lg font-medium text-gray-900" th:text="${dica.titulo}">Título da Dica</h4>
-                                <span th:class="${'px-2 py-1 text-xs rounded-full ' + 
-                                    (dica.nivelDificuldade == 'FACIL' ? 'bg-green-100 text-green-800' :
-                                     dica.nivelDificuldade == 'MEDIO' ? 'bg-yellow-100 text-yellow-800' :
-                                     'bg-red-100 text-red-800')}"
-                                    th:text="${dica.nivelDificuldade}">
-                                    Nível
+                    <div 
+                        th:each="dica : ${dicas}" 
+                        th:data-categoria="${dica.categoria}"
+                        class="dica-card bg-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <span 
+                                    th:text="${dica.categoria}"
+                                    class="px-3 py-1 rounded-full text-xs font-medium flex items-center"
+                                    th:class="${
+                                        dica.categoria == 'BANHO' ? 'bg-blue-100 text-blue-800' : 
+                                        dica.categoria == 'TORNEIRA' ? 'bg-green-100 text-green-800' :
+                                        dica.categoria == 'LAVAGEM' ? 'bg-purple-100 text-purple-800' :
+                                        'bg-gray-100 text-gray-800'
+                                    }"
+                                >
+                                    <i class="fas fa-tag mr-1"></i>
+                                    <span th:text="${dica.categoria}"></span>
+                                </span>
+                                <span 
+                                    th:text="${dica.nivelDificuldade}"
+                                    class="px-3 py-1 rounded-full text-xs font-medium flex items-center"
+                                    th:class="${
+                                        dica.nivelDificuldade == 'FACIL' ? 'bg-green-100 text-green-800' :
+                                        dica.nivelDificuldade == 'MEDIO' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
+                                    }"
+                                >
+                                    <i th:class="${
+                                        dica.nivelDificuldade == 'MEDIO' ? 'fas fa-meh' :
+                                        'fas fa-frown'
+                                    } + ' mr-1'"></i>
+                                    <span th:text="${dica.nivelDificuldade}"></span>
                                 </span>
                             </div>
-                            <p class="mt-2 text-gray-600" th:text="${dica.descricao}">Descrição da dica...</p>
-                            <div class="mt-4 flex items-center text-sm text-gray-500">
-                                <svg class="h-5 w-5 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                </svg>
-                                <span>Economia estimada: </span>
-                                <span class="font-medium ml-1" th:text="${dica.economiaEstimada + 'L/mês'}">100L/mês</span>
+                            
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2" th:text="${dica.titulo}"></h3>
+                            <p class="text-gray-600 mb-4" th:text="${dica.descricao}"></p>
+                            
+                            <div class="flex items-center text-blue-600 bg-blue-50 p-3 rounded-lg">
+                                <i class="fas fa-tint text-xl mr-3"></i>
+                                <div>
+                                    <span class="text-sm text-blue-600">Economia estimada:</span>
+                                    <span class="font-bold block" th:text="${dica.economiaEstimada + 'L/mês'}"></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -89,19 +268,73 @@
     </div>
 
     <script>
-        function calcularEconomia() {
-            const tempoBanho = document.getElementById('tempoBanho').value;
-            const vazamentos = document.getElementById('vazamentos').value;
-            
-            // Cálculos estimados
-            const economiaBanho = (tempoBanho - 5) * 9 * 30; // 9L por minuto, 30 dias
-            const economiaVazamentos = vazamentos * 0.07 * 1440 * 30; // 0.07L por gota, 1440 minutos por dia, 30 dias
-            
-            const economiaTotal = Math.max(0, economiaBanho) + Math.max(0, economiaVazamentos);
-            
-            document.getElementById('economiaTotal').textContent = Math.round(economiaTotal);
-            document.getElementById('resultadoEconomia').classList.remove('hidden');
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Calculadora de Economia
+            document.getElementById('calcularButton').addEventListener('click', function() {
+                const tempoBanho = parseFloat(document.getElementById('tempoBanho').value) || 0;
+                const vazamentos = parseFloat(document.getElementById('vazamentos').value) || 0;
+                
+                const economiaBanho = Math.max(0, (tempoBanho - 5) * 9 * 30);
+                const economiaVazamentos = vazamentos * 0.07 * 1440 * 30;
+                
+                const economiaTotal = Math.round(economiaBanho + economiaVazamentos);
+                
+                document.getElementById('economiaTotal').textContent = economiaTotal.toLocaleString();
+                document.getElementById('resultadoEconomia').classList.remove('hidden');
+            });
+
+            // Funcionalidade de Busca
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.dica-card');
+                
+                cards.forEach(card => {
+                    const title = card.querySelector('h3').textContent.toLowerCase();
+                    const description = card.querySelector('p').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+
+            // Filtro por Categoria
+            const categoryButtons = document.querySelectorAll('.categoria-btn');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const categoria = this.getAttribute('data-categoria');
+                    const cards = document.querySelectorAll('.dica-card');
+                    
+                    // Atualizar estilo dos botões
+                    categoryButtons.forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-white', 'text-gray-600');
+                    });
+                    this.classList.remove('bg-white', 'text-gray-600');
+                    this.classList.add('bg-blue-600', 'text-white');
+                    
+                    // Filtrar cards
+                    cards.forEach(card => {
+                        if (categoria === 'TODAS' || card.getAttribute('data-categoria') === categoria) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Fechar banner de alerta
+            const alertBanner = document.querySelector('.bg-yellow-50');
+            if (alertBanner) {
+                const closeButton = alertBanner.querySelector('button');
+                closeButton.addEventListener('click', function() {
+                    alertBanner.style.display = 'none';
+                });
+            }
+        });
     </script>
 </body>
 </html>

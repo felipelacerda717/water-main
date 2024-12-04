@@ -5,28 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AquaMonitor - Conquistas</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
+    <!-- Notification Banner -->
+    <div class="bg-yellow-50 border-b border-yellow-200" th:if="${showAlert}">
+        <div class="container mx-auto px-4 py-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-yellow-800 font-medium">Atenção: Consumo de hoje está 30% acima da média!</span>
+                        <span class="text-xs text-yellow-600">Clique para ver mais detalhes sobre seu consumo</span>
+                    </div>
+                </div>
+                <button class="text-yellow-600 hover:text-yellow-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
-    <header class="bg-blue-600 text-white">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="text-2xl font-bold">AquaMonitor</div>
-                <div class="flex items-center space-x-4">
-                    <span th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+<header class="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <!-- Logo Section -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='/dashboard'">
+                <div class="rounded-lg bg-white/10 p-2">
+                    <i class="fas fa-tint text-2xl text-white"></i>
+                </div>
+                <div class="flex flex-col">
+                    <div class="text-xl font-bold tracking-wider">AquaMonitor</div>
+                    <div class="text-xs text-blue-100">Economia Inteligente de Água</div>
+                </div>
+            </div>
+
+            <!-- User Section -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
+                    <div class="flex flex-col text-right">
+                        <span class="text-sm font-medium" th:text="${'Olá, ' + #authentication.name}">Olá, Usuário</span>
+                        <span class="text-xs text-blue-100">Usuário Residencial</span>
+                    </div>
+                    <div class="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-user text-sm"></i>
+                    </div>
+                </div>
+
+                <!-- Logout Button (mostrar em dashboard, consumo, metas e dicas) -->
+                <div th:if="${!#lists.contains({'ranking', 'conquistas'}, activeMenu)}">
                     <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-700">
-                            Sair
+                        <button type="submit" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            <span>Sair</span>
                         </button>
                     </form>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
     <div class="flex">
         <!-- Sidebar -->
-        <div th:replace="fragments/sidebar :: sidebar"></div>
+        <aside class="w-64 bg-white shadow-md min-h-screen">
+            <nav class="p-4">
+                <div class="space-y-4">
+                    <!-- Dashboard -->
+                    <a href="/dashboard" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-chart-line w-5"></i>
+                        <span>Dashboard</span>
+                    </a>
+
+                    <!-- Registrar Consumo -->
+                    <a href="/consumo" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-tint w-5"></i>
+                        <span>Registrar Consumo</span>
+                    </a>
+
+                    <!-- Minhas Metas -->
+                    <a href="/metas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-bullseye w-5"></i>
+                        <span>Minhas Metas</span>
+                    </a>
+
+                    <!-- Dicas de Economia -->
+                    <a href="/dicas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-lightbulb w-5"></i>
+                        <span>Dicas de Economia</span>
+                    </a>
+
+                    <!-- Conquistas -->
+                    <a href="/conquistas" 
+                       class="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                        <i class="fas fa-trophy w-5"></i>
+                        <span>Conquistas</span>
+                    </a>
+
+                    <!-- Ranking -->
+                    <a href="/ranking" 
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-medal w-5"></i>
+                        <span>Ranking</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
 
         <!-- Main Content -->
         <main class="flex-1 p-8">
@@ -48,7 +137,7 @@
                 <!-- Grid de Conquistas -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     <div th:each="conquista : ${conquistas}" 
-                         class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                         class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-all duration-300">
                         <div class="p-6">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
@@ -62,10 +151,12 @@
                                 <div class="ml-4">
                                     <span th:if="${conquista.dataConquista != null}"
                                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i>
                                         Conquistado
                                     </span>
                                     <span th:unless="${conquista.dataConquista != null}"
                                           class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-clock mr-1"></i>
                                         Em Progresso
                                     </span>
                                 </div>
@@ -78,7 +169,7 @@
                                     <span th:text="${conquista.conquista.pontosRequeridos + ' necessários'}">100 necessários</span>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 rounded-full h-2" 
+                                    <div class="bg-blue-600 rounded-full h-2 transition-all duration-500" 
                                          th:style="'width: ' + ${(conquista.pontosAtuais * 100) / conquista.conquista.pontosRequeridos + '%'}">
                                     </div>
                                 </div>
@@ -91,17 +182,14 @@
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Próximas Conquistas</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div class="border rounded-lg p-4 bg-gray-50">
+                        <div class="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="text-sm font-medium text-gray-900">Super Economizador</h4>
                                     <p class="text-xs text-gray-500">Economize 1000L em um mês</p>
                                 </div>
                                 <div class="ml-4">
-                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                    </svg>
+                                    <i class="fas fa-lock text-gray-400"></i>
                                 </div>
                             </div>
                         </div>
@@ -112,7 +200,17 @@
     </div>
 
     <script>
-        //adicionar animações e interações aqui
+        // Adicionar qualquer JavaScript necessário aqui
+        document.addEventListener('DOMContentLoaded', function() {
+            // Função para fechar o banner de alerta
+            const alertBanner = document.querySelector('.bg-yellow-50');
+            if (alertBanner) {
+                const closeButton = alertBanner.querySelector('button');
+                closeButton.addEventListener('click', function() {
+                    alertBanner.style.display = 'none';
+                });
+            }
+        });
     </script>
 </body>
 </html>

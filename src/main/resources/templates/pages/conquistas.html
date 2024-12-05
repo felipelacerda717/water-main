@@ -8,24 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
-    <!-- Notification Banner -->
-    <div class="bg-yellow-50 border-b border-yellow-200" th:if="${showAlert}">
-        <div class="container mx-auto px-4 py-2">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
-                    <div class="flex flex-col">
-                        <span class="text-sm text-yellow-800 font-medium">Atenção: Consumo de hoje está 30% acima da média!</span>
-                        <span class="text-xs text-yellow-600">Clique para ver mais detalhes sobre seu consumo</span>
-                    </div>
-                </div>
-                <button class="text-yellow-600 hover:text-yellow-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
+    
+    
     <!-- Header -->
 <header class="bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg">
     <div class="container mx-auto px-4">
@@ -68,7 +52,6 @@
 </header>
 
     <div class="flex">
-        <!-- Sidebar -->
         <aside class="w-64 bg-white shadow-md min-h-screen">
             <nav class="p-4">
                 <div class="space-y-4">
@@ -81,7 +64,7 @@
 
                     <!-- Registrar Consumo -->
                     <a href="/consumo" 
-                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                       class="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
                         <i class="fas fa-tint w-5"></i>
                         <span>Registrar Consumo</span>
                     </a>
@@ -102,7 +85,7 @@
 
                     <!-- Conquistas -->
                     <a href="/conquistas" 
-                       class="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600">
+                       class="flex items-center space-x-3 p-3 rounded-lg text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                         <i class="fas fa-trophy w-5"></i>
                         <span>Conquistas</span>
                     </a>
@@ -119,78 +102,322 @@
 
         <!-- Main Content -->
         <main class="flex-1 p-8">
-            <div class="max-w-6xl mx-auto">
-                <!-- Resumo de Pontos -->
-                <div class="bg-white rounded-lg shadow p-6 mb-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-900">Suas Conquistas</h2>
-                            <p class="mt-1 text-sm text-gray-500">Continue economizando água para desbloquear mais conquistas!</p>
+            <div class="max-w-7xl mx-auto">
+                <!-- Resumo do Perfil -->
+                <div class="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                        <!-- Informações Principais -->
+                        <div class="col-span-2">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">Suas Conquistas</h2>
+                            <p class="text-gray-500 mb-4">Continue sua jornada de economia de água!</p>
+                            <div class="flex items-center text-3xl font-bold text-blue-600">
+                                <i class="fas fa-star mr-3"></i>
+                                850 Pontos
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-3xl font-bold text-blue-600">850</p>
-                            <p class="text-sm text-gray-500">Pontos Totais</p>
+                        <!-- Estatísticas -->
+                        <div class="grid grid-cols-2 gap-4 col-span-2">
+                            <div class="bg-blue-50 rounded-xl p-4">
+                                <div class="text-blue-600 text-sm font-medium">Conquistas</div>
+                                <div class="mt-2 flex justify-between items-end">
+                                    <span class="text-2xl font-bold">12/24</span>
+                                    <i class="fas fa-trophy text-blue-400 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="bg-green-50 rounded-xl p-4">
+                                <div class="text-green-600 text-sm font-medium">Economia Total</div>
+                                <div class="mt-2 flex justify-between items-end">
+                                    <span class="text-2xl font-bold">2.450L</span>
+                                    <i class="fas fa-tint text-green-400 text-xl"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Grid de Conquistas -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <div th:each="conquista : ${conquistas}" 
-                         class="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-all duration-300">
-                        <div class="p-6">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-semibold text-gray-900" th:text="${conquista.conquista.nome}">
-                                        Nome da Conquista
-                                    </h3>
-                                    <p class="mt-1 text-sm text-gray-500" th:text="${conquista.conquista.descricao}">
-                                        Descrição da conquista
-                                    </p>
-                                </div>
-                                <div class="ml-4">
-                                    <span th:if="${conquista.dataConquista != null}"
-                                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                        Conquistado
-                                    </span>
-                                    <span th:unless="${conquista.dataConquista != null}"
-                                          class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        Em Progresso
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Barra de Progresso -->
-                            <div class="mt-4">
-                                <div class="flex justify-between text-sm text-gray-600 mb-1">
-                                    <span th:text="${conquista.pontosAtuais + ' pontos'}">0 pontos</span>
-                                    <span th:text="${conquista.conquista.pontosRequeridos + ' necessários'}">100 necessários</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-blue-600 rounded-full h-2 transition-all duration-500" 
-                                         th:style="'width: ' + ${(conquista.pontosAtuais * 100) / conquista.conquista.pontosRequeridos + '%'}">
+                <!-- Categorias de Conquistas -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Conquistas de Economia -->
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2 mb-6">
+                            <i class="fas fa-leaf text-green-500 text-xl"></i>
+                            <h3 class="text-lg font-semibold">Economia de Água</h3>
+                        </div>
+                        
+                        <!-- Conquista Desbloqueada -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500 transform transition hover:scale-105">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-tint text-green-500 text-xl mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold">Economista Iniciante</h4>
+                                        <p class="text-sm text-gray-500">Economize 100L em um único dia</p>
                                     </div>
                                 </div>
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Conquistado
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Progresso</span>
+                                    <span class="text-green-600 font-medium">100%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 rounded-full h-2 w-full"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Recompensa</span>
+                                <span class="text-yellow-600 font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    100 pontos
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Conquista Em Progresso -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500 transform transition hover:scale-105">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-crown text-blue-500 text-xl mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold">Mestre da Economia</h4>
+                                        <p class="text-sm text-gray-500">Economize 1000L em um mês</p>
+                                    </div>
+                                </div>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Em Progresso
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Progresso</span>
+                                    <span class="text-blue-600 font-medium">750/1000L</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 rounded-full h-2 w-3/4"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Recompensa</span>
+                                <span class="text-yellow-600 font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    500 pontos
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conquistas de Registro -->
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2 mb-6">
+                            <i class="fas fa-calendar-check text-purple-500 text-xl"></i>
+                            <h3 class="text-lg font-semibold">Registros Constantes</h3>
+                        </div>
+
+                        <!-- Conquista Desbloqueada -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500 transform transition hover:scale-105">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-double text-purple-500 text-xl mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold">Comprometido</h4>
+                                        <p class="text-sm text-gray-500">Registre consumo por 7 dias seguidos</p>
+                                    </div>
+                                </div>
+                                <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Conquistado
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Progresso</span>
+                                    <span class="text-purple-600 font-medium">7/7 dias</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-purple-500 rounded-full h-2 w-full"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Recompensa</span>
+                                <span class="text-yellow-600 font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    200 pontos
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Conquista Bloqueada -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-gray-300 opacity-75 transform transition hover:scale-105">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chart-line text-gray-400 text-xl mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold">Analista de Água</h4>
+                                        <p class="text-sm text-gray-500">Registre consumo por 30 dias seguidos</p>
+                                    </div>
+                                </div>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Bloqueado
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Progresso</span>
+                                    <span class="text-gray-600 font-medium">0/30 dias</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gray-400 rounded-full h-2 w-0"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Recompensa</span>
+                                <span class="text-yellow-600 font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    1000 pontos
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Conquistas de Metas -->
+                    <div class="space-y-4">
+                        <div class="flex items-center space-x-2 mb-6">
+                            <i class="fas fa-bullseye text-red-500 text-xl"></i>
+                            <h3 class="text-lg font-semibold">Metas Alcançadas</h3>
+                        </div>
+
+                        <!-- Conquista Em Progresso -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500 transform transition hover:scale-105">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-flag text-red-500 text-xl mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold">Primeira Meta</h4>
+                                        <p class="text-sm text-gray-500">Complete sua primeira meta mensal</p>
+                                    </div>
+                                </div>
+                                <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-clock mr-1"></i>
+                                    Em Progresso
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Progresso</span>
+                                    <span class="text-red-600 font-medium">80%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-500 rounded-full h-2 w-4/5"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Recompensa</span>
+                                <span class="text-yellow-600 font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    300 pontos
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Conquista Bloqueada -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-gray-300 opacity-75 transform transition hover:scale-105">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-award text-gray-400 text-xl mr-3"></i>
+                                    <div>
+                                        <h4 class="font-semibold">Consistência</h4>
+                                        <p class="text-sm text-gray-500">Complete 3 metas consecutivas</p>
+                                    </div>
+                                </div>
+                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full flex items-center">
+                                    <i class="fas fa-lock mr-1"></i>
+                                    Bloqueado
+                                </span>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-gray-500">Progresso</span>
+                                    <span class="text-gray-600 font-medium">0/3 metas</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gray-400 rounded-full h-2 w-0"></div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Recompensa</span>
+                                <span class="text-yellow-600 font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    800 pontos
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Conquistas Bloqueadas -->
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Próximas Conquistas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div class="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="text-sm font-medium text-gray-900">Super Economizador</h4>
-                                    <p class="text-xs text-gray-500">Economize 1000L em um mês</p>
+                <!-- Próximas Conquistas -->
+                <div class="mt-12">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <i class="fas fa-lock text-gray-400 text-xl"></i>
+                        <h3 class="text-lg font-semibold">Próximas Conquistas</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Conquista Bloqueada 1 -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-gray-300 opacity-75 group hover:opacity-100 transition-all">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-trophy text-gray-400 text-xl mr-3 group-hover:text-yellow-500 transition-colors"></i>
+                                    <h4 class="font-semibold">Super Economizador</h4>
                                 </div>
-                                <div class="ml-4">
-                                    <i class="fas fa-lock text-gray-400"></i>
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <p class="text-sm text-gray-500">Economize 5000L em um único mês</p>
+                            <div class="mt-3 flex justify-end">
+                                <span class="text-yellow-600 text-sm font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    2000 pontos
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Conquista Bloqueada 2 -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-gray-300 opacity-75 group hover:opacity-100 transition-all">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-chart-bar text-gray-400 text-xl mr-3 group-hover:text-purple-500 transition-colors"></i>
+                                    <h4 class="font-semibold">Estatístico Master</h4>
                                 </div>
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <p class="text-sm text-gray-500">Registre consumo por 90 dias consecutivos</p>
+                            <div class="mt-3 flex justify-end">
+                                <span class="text-yellow-600 text-sm font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    3000 pontos
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Conquista Bloqueada 3 -->
+                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-gray-300 opacity-75 group hover:opacity-100 transition-all">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-award text-gray-400 text-xl mr-3 group-hover:text-green-500 transition-colors"></i>
+                                    <h4 class="font-semibold">Guardião da Água</h4>
+                                </div>
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <p class="text-sm text-gray-500">Complete todas as conquistas anteriores</p>
+                            <div class="mt-3 flex justify-end">
+                                <span class="text-yellow-600 text-sm font-medium flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    5000 pontos
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -200,16 +427,16 @@
     </div>
 
     <script>
-        // Adicionar qualquer JavaScript necessário aqui
         document.addEventListener('DOMContentLoaded', function() {
-            // Função para fechar o banner de alerta
-            const alertBanner = document.querySelector('.bg-yellow-50');
-            if (alertBanner) {
-                const closeButton = alertBanner.querySelector('button');
-                closeButton.addEventListener('click', function() {
-                    alertBanner.style.display = 'none';
-                });
-            }
+            // Animações suaves para as barras de progresso
+            const progressBars = document.querySelectorAll('[class*="bg-blue-500"], [class*="bg-green-500"], [class*="bg-purple-500"], [class*="bg-red-500"]');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
         });
     </script>
 </body>

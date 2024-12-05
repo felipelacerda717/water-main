@@ -270,17 +270,26 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Calculadora de Economia
-            document.getElementById('calcularButton').addEventListener('click', function() {
+            document.getElementById('calcularButton').addEventListener('click', async function() {
                 const tempoBanho = parseFloat(document.getElementById('tempoBanho').value) || 0;
                 const vazamentos = parseFloat(document.getElementById('vazamentos').value) || 0;
                 
-                const economiaBanho = Math.max(0, (tempoBanho - 5) * 9 * 30);
-                const economiaVazamentos = vazamentos * 0.07 * 1440 * 30;
-                
-                const economiaTotal = Math.round(economiaBanho + economiaVazamentos);
-                
-                document.getElementById('economiaTotal').textContent = economiaTotal.toLocaleString();
-                document.getElementById('resultadoEconomia').classList.remove('hidden');
+                try {
+                    const response = await fetch('/dicas/calcular-economia', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `tempoBanho=${tempoBanho}&vazamentos=${vazamentos}`
+                    });
+                    
+                    const data = await response.json();
+                    document.getElementById('economiaTotal').textContent = 
+                        Math.round(data.economiaTotal).toLocaleString();
+                    document.getElementById('resultadoEconomia').classList.remove('hidden');
+                } catch (error) {
+                    console.error('Erro ao calcular economia:', error);
+                }
             });
 
             // Funcionalidade de Busca
